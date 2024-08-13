@@ -7,7 +7,6 @@ const App = () => {
   const [timesClicked, setTimesClicked] = useState(0)
 
   useEffect(() => {
-    console.log("Buttons1: ", actionButtons)
     buttonService
       .getAll()
       .then(initialButtons => {
@@ -19,7 +18,6 @@ const App = () => {
       })
     }, [])
     
-  console.log("Buttons2: ", actionButtons)
   const handleButtonClick = () => {
     console.log("Clicked button")
     setTimesClicked(timesClicked + 1)
@@ -42,11 +40,9 @@ const ClickCounter = ({timesClicked}) => {
 }
 
 const ActionButtons = ({ handleClick, actionButtons }) => {
-  console.log("Buttons now: ", actionButtons)
   return (
     <ul>
       {actionButtons.map(actionButton => {
-        {console.log("Button: ", actionButton, actionButton.sizing, actionButton.action)}
         return (
           <ActionButton 
             handleClick={handleClick} 

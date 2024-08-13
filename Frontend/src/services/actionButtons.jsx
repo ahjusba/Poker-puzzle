@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const url = 'http://localhost:3001/api/buttons'
+// const url = 'http://localhost:3001/api/buttons'
+const url = '/api/buttons'
 
 const getAll = () => {
   console.log("getting from " + url)
