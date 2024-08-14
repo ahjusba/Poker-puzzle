@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const Puzzle = require('./models/puzzle')
 
 app.use(cors())
 app.use(express.json())
@@ -12,30 +14,34 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 //POST url status responsetime person
 morgan.token('person', function (req) { return JSON.stringify(req.body) })
 
-let buttons = [
-  {
-    action: "fold",
-    sizing: "0",
-    id:"0"
-  },
-  {
-    action: "call",
-    sizing: "0",
-    id:"1"
-  },
-  {
-    action: "raise",
-    sizing: "60",
-    id:"2"
-  },
-]
-
 app.get('/', (request, response) => {
-  response.send('<h1>ello World!</h1>')
+  response.send('<h1>TODO: infopage</h1>')
 })
 
-app.get('/api/buttons', (request, response) => {
-  response.json(buttons)
+app.get('/api/puzzles', (request, response) => {
+  Puzzle.find({}).then(puzzles => {
+    response.json(puzzles)
+  })
+})
+
+app.get('/api/puzzles/:id', (request, response, next) => {
+  console.log("Getting puzzle with date", request.params.id)
+  Puzzle.find({ date: request.params.id })
+    .then(puzzles => {
+      if (puzzles && puzzles.length > 0) {
+        console.log(puzzles)
+        response.json(puzzles[0])
+      } else {
+        response.status(404).end()
+      }
+  })
+  .catch(error => next(error))
+})
+
+
+const PORT =  process.env.PORT
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
 })
 
 const unknownEndpoint = (request, response) => {
@@ -44,7 +50,14 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT =  process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)

@@ -1,17 +1,29 @@
 import { useState, useEffect } from 'react'
-import buttonService from './services/actionButtons'
+import puzzlesService from './services/puzzles'
 
 const App = () => {
 
-  const [actionButtons, setActionButtons] = useState([])
+  const [dailyPuzzle, setDailyPuzzle] = useState([])
   const [timesClicked, setTimesClicked] = useState(0)
 
+  const getDate = () => {
+    const date = new Date()
+    const year = date.getFullYear().toString().slice(-2); // Get last 2 digits of the year
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Get month and ensure it's 2 digits
+    const day = date.getDate().toString().padStart(2, '0'); // Get day and ensure it's 2 digits
+    return `${year}${month}${day}`;
+  }
+
+  const date = getDate() //format YYMMDD
+
+
   useEffect(() => {
-    buttonService
-      .getAll()
-      .then(initialButtons => {
-        console.log("Promise fulfilled with data: ", initialButtons)
-        setActionButtons(initialButtons)
+    console.log("Getting puzzle for date ", date)
+    puzzlesService
+      .getId(date)
+      .then(puzzle => {
+        console.log("Promise fulfilled with data: ", puzzle)
+        setDailyPuzzle(puzzle)
       })
       .catch(error => {
         console.log('Error fetching actionButtons: ', error)
@@ -26,7 +38,7 @@ const App = () => {
   return (
     <div>
       <ClickCounter timesClicked={timesClicked}/>
-      <ActionButtons handleClick={handleButtonClick} actionButtons={actionButtons} />
+      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} />
     </div>
   )
 }
@@ -39,16 +51,16 @@ const ClickCounter = ({timesClicked}) => {
   )
 }
 
-const ActionButtons = ({ handleClick, actionButtons }) => {
+const OptionButtons = ({ handleClick, optionButtons }) => {
   return (
     <ul>
-      {actionButtons.map(actionButton => {
+      {optionButtons.map(optionButton => {
         return (
-          <ActionButton 
+          <OptionButton 
             handleClick={handleClick} 
-            action={actionButton.action} 
-            sizing={actionButton.sizing} 
-            key={actionButton.id}
+            action={optionButton.action} 
+            sizing={optionButton.sizing} 
+            key={optionButton.id}
           />
         )
       })}
@@ -56,7 +68,7 @@ const ActionButtons = ({ handleClick, actionButtons }) => {
   )
 }
 
-const ActionButton = ({handleClick, action, sizing}) => {
+const OptionButton = ({handleClick, action, sizing}) => {
   return (
     <button onClick={handleClick}>
       {action} {sizing}
