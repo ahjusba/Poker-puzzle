@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import puzzlesService from './services/puzzles'
+import './index.css'
 
 const App = () => {
 
   const [dailyPuzzle, setDailyPuzzle] = useState([])
-  const [timesClicked, setTimesClicked] = useState(0)
+  const [hasVoted, setHasVoted] = useState(false)
 
   const getDate = () => {
     const date = new Date()
@@ -16,8 +17,20 @@ const App = () => {
 
   const date = getDate() //format YYMMDD
 
-
   useEffect(() => {
+    //Has the user voted already today -> affects rendering
+    const storedDate = localStorage.getItem('voteDate')
+    const votedStatus = localStorage.getItem('hasVoted') === 'true'
+
+    if(storedDate === date) {
+      setHasVoted(votedStatus)
+    } else {
+      localStorage.removeItem('voteDate')
+      localStorage.removeItem('hasVoted')
+      setHasVoted(false)
+    }
+
+    //Retrieve today's puzzle
     console.log("Getting puzzle for date ", date)
     puzzlesService
       .getId(date)
@@ -28,30 +41,46 @@ const App = () => {
       .catch(error => {
         console.log('Error fetching actionButtons: ', error)
       })
-    }, [])
+  }, [])
     
-  const handleButtonClick = () => {
-    console.log("Clicked button")
-    setTimesClicked(timesClicked + 1)
+
+  const updateVotes = (voteId) => {
+    puzzlesService
+      .vote(dailyPuzzle.id, voteId)
+      .then(response => {
+        console.log("Vote response: ", response)
+        setDailyPuzzle(response)
+        setHasVoted(true)
+        localStorage.setItem('voteDate', date);
+        localStorage.setItem('hasVoted', 'true');
+      })
+      .catch(error => {
+        console.log("error: ", error.response.data.error)
+      })
+  }
+
+  const handleButtonClick = (optionButtonId) => {
+    updateVotes(optionButtonId)
   }
 
   return (
     <div>
-      <ClickCounter timesClicked={timesClicked}/>
-      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} />
+      <Title puzzle={dailyPuzzle}/>
+      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} />
+      <Logo />
     </div>
   )
 }
 
-const ClickCounter = ({timesClicked}) => {
+const Title = ({puzzle}) => {
   return (
     <h1>
-      Times clicked: {timesClicked}
+      {puzzle.puzzleDescription}
     </h1>
   )
 }
 
-const OptionButtons = ({ handleClick, optionButtons }) => {
+const OptionButtons = ({ handleClick, optionButtons, hasVoted }) => {
   return (
     <ul>
       {optionButtons.map(optionButton => {
@@ -60,6 +89,9 @@ const OptionButtons = ({ handleClick, optionButtons }) => {
             handleClick={handleClick} 
             action={optionButton.action} 
             sizing={optionButton.sizing} 
+            hasVoted={hasVoted}
+            votes={optionButton.votes}
+            id={optionButton.id}
             key={optionButton.id}
           />
         )
@@ -68,11 +100,29 @@ const OptionButtons = ({ handleClick, optionButtons }) => {
   )
 }
 
-const OptionButton = ({handleClick, action, sizing}) => {
+const OptionButton = ({handleClick, action, sizing, hasVoted, votes, id}) => {
   return (
-    <button onClick={handleClick}>
-      {action} {sizing}
-    </button>    
+    <div className="voteResultBox">
+      {hasVoted ? (        
+        <p>{action} <br></br>{sizing}votes: {votes}</p>
+      ) : (
+        <button onClick={() => handleClick(id)}>
+          {action} {sizing}
+        </button>
+      )}
+    </div>
+  )
+}
+
+const Logo = () => {
+  return (
+    <div>
+      <img
+        src="/Pokerikerho_logo.png"  // Path relative to the public folder
+        alt="Pokerikerho Logo"
+        className="logo"
+      />
+    </div>
   )
 }
 

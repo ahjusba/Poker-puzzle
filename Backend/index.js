@@ -38,6 +38,34 @@ app.get('/api/puzzles/:id', (request, response, next) => {
   .catch(error => next(error))
 })
 
+app.put('/api/puzzles/:id/vote', (request, response, next) => {
+  const { id: puzzleId } = request.params
+  const { voteId } = request.body
+  console.log(`Searching for document with puzzle id ${puzzleId} and voteId ${voteId}`)
+
+  Puzzle.findOneAndUpdate(
+    {
+      _id: puzzleId,
+      'options._id': voteId
+    },
+    {
+      $inc: { 'options.$.votes': 1 }
+    },
+    { new: true }
+  )
+  .then(updatedPuzzle => {
+    console.log("UpdatedPuzzle: ", updatedPuzzle)
+    if (updatedPuzzle) {
+      response.json(updatedPuzzle);
+    } else {      
+      response.status(404).end();
+    }
+  })
+  .catch(error => {
+    next(error);
+  });
+})
+
 
 const PORT =  process.env.PORT
 app.listen(PORT, () => {

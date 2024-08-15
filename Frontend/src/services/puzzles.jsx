@@ -10,9 +10,15 @@ const getAll = () => {
 }
 
 const getId = (id) => {
-  console.log("GET id from " + `${url}/${id+1}`)
-  return axios.get(`${url}/${id+1}`)
+  console.log("GET id from " + `${url}/${id}`)
+  return axios.get(`${url}/${id}`)
           .then(response => response.data)
+}
+
+const vote = (id, voteId) => {
+  console.log(`id: ${id} vodeId: ${voteId}`)
+  return axios.put(`${url}/${id}/vote`, { voteId: voteId })
+          .then(response => response.data)          
 }
 
 // const update = (id, button) => {
@@ -32,4 +38,4 @@ const getId = (id) => {
 //     .delete(`${url}/${id}`)
 // }
 
-export default { getAll, getId }
+export default { getAll, getId, vote }

@@ -9,12 +9,12 @@ mongoose.set('strictQuery',false)
 mongoose.connect(url)
 
 const puzzle = new Puzzle({
-  date: 240814,
+  date: 240815,
   puzzleDescription: "This is puzzle description",
   options: [
     { action: "fold" },
     { action: "call" },
-    { action: "raise", sizing: 6 },
+    { action: "raise", sizing: 3 },
   ]
 })
 

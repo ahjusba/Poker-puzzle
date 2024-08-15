@@ -22,6 +22,11 @@ const optionSchema = new mongoose.Schema({
   },
   sizing: {
     type: Number,
+  },
+  votes: {
+    type: Number,
+    default: 0,
+    required: true
   }
 });
 
