@@ -9,7 +9,7 @@ button {
 }
 
 html, body {
-  background-color: rgb(153, 52, 52);
+  background-color: rgb(201, 76, 76);
   color: white;
   margin: 0;
   padding: 0;
@@ -23,16 +23,21 @@ html, body {
 }
 
 .logo {
-  width: 100vw;
+  width: 300px;
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    width: 100vw;
+    left: 0;
+  }
 }
 
 .voteResultBox {
   margin: 15px 0;
-  background-color: #04AA6D;
+  background-color: #05c47e;
   font-size: 24px;
   color: white;
   font-family: 'Oswald';

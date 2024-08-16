@@ -118,7 +118,7 @@ const Logo = () => {
   return (
     <div>
       <img
-        src="/Pokerikerho_logo.png"  // Path relative to the public folder
+        src="/pokerikerho_logo_läpinäkyvä.png"  // Path relative to the public folder
         alt="Pokerikerho Logo"
         className="logo"
       />

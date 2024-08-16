@@ -26,7 +26,9 @@ app.get('/api/puzzles', (request, response) => {
 
 app.get('/api/puzzles/:id', (request, response, next) => {
   console.log("Getting puzzle with date", request.params.id)
-  Puzzle.find({ date: request.params.id })
+  let date = request.params.id
+  date = "240815" //Temporary
+  Puzzle.find({ date: date })
     .then(puzzles => {
       if (puzzles && puzzles.length > 0) {
         console.log(puzzles)
