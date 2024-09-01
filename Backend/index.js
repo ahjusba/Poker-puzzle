@@ -14,6 +14,32 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 //POST url status responsetime person
 morgan.token('person', function (req) { return JSON.stringify(req.body) })
 
+//Proxy for PokerNow handhistories, bypassing CORS
+app.get('/api/hand-replayer/hand/:handId', async (req, res) => {
+  const { handId } = req.params; // Extract the hand ID from the request params
+  console.log("Fetching hand form PokerNow with ID", handId)
+  const apiUrl = `https://www.pokernow.club/api/hand-replayer/hand/${handId}`; // Construct the API URL
+
+  try {
+    // Dynamically import node-fetch
+    const { default: fetch } = await import('node-fetch')
+
+    // Fetch the JSON data from the external API
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching data from external API: ${response.statusText}`);
+    }
+
+    const data = await response.json(); // Parse the response as JSON
+
+    res.json(data); // Send the JSON data back to the frontend
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: 'Failed to fetch data from external API' });
+  }
+});
+
 app.get('/', (request, response) => {
   response.send('<h1>TODO: infopage</h1>')
 })

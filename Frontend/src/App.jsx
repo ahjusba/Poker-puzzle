@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import puzzlesService from './services/puzzles'
 import './index.css'
+import PokerReplayer from './components/pokerReplayer'
 
 const App = () => {
 
@@ -65,8 +66,9 @@ const App = () => {
 
   return (
     <div>
-      <Title puzzle={dailyPuzzle}/>
-      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} />
+      <PokerReplayer />
+      {/* <Title puzzle={dailyPuzzle}/>
+      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} /> */}
       <Logo />
     </div>
   )
