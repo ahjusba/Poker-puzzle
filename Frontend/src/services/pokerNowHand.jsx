@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = '/api/hand-replayer/hand'
+const baseUrl = '/api/pokerNowHand'
 
 const fetchHandData = (handId) => {
   console.log("Fetching hand data for ID:", handId)

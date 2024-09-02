@@ -15,30 +15,37 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 morgan.token('person', function (req) { return JSON.stringify(req.body) })
 
 //Proxy for PokerNow handhistories, bypassing CORS
-app.get('/api/hand-replayer/hand/:handId', async (req, res) => {
-  const { handId } = req.params; // Extract the hand ID from the request params
-  console.log("Fetching hand form PokerNow with ID", handId)
-  const apiUrl = `https://www.pokernow.club/api/hand-replayer/hand/${handId}`; // Construct the API URL
+app.get('/api/pokerNowHand/:handId', async (req, res) => {
+  const { handId } = req.params
+  console.log("HandID: ", handId)
+  var apiUrl = ""
+  if(handId.includes('-')) {
+    apiUrl = `https://media.pokernow.club/shared-hands/${handId}.json`
+  } else {
+    apiUrl = `https://www.pokernow.club/api/hand-replayer/hand/${handId}`
+  }  
+  console.log("Fetching hand form PokerNow with URL", apiUrl)
 
   try {
     // Dynamically import node-fetch
     const { default: fetch } = await import('node-fetch')
 
     // Fetch the JSON data from the external API
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl)
 
     if (!response.ok) {
-      throw new Error(`Error fetching data from external API: ${response.statusText}`);
+      throw new Error(`Error fetching data from external API: ${response.statusText}`)
     }
+    console.log("Response:", response)
+    const data = await response.json() // Parse the response as JSON
+    console.log("Fetched data:", JSON.stringify(data, null, 2))
 
-    const data = await response.json(); // Parse the response as JSON
-
-    res.json(data); // Send the JSON data back to the frontend
+    res.json(data)
   } catch (error) {
-    console.error("Error fetching data:", error);
-    res.status(500).json({ error: 'Failed to fetch data from external API' });
+    console.error("Error fetching data:", error)
+    res.status(500).json({ error: 'Failed to fetch data from external API' })
   }
-});
+})
 
 app.get('/', (request, response) => {
   response.send('<h1>TODO: infopage</h1>')
@@ -84,14 +91,14 @@ app.put('/api/puzzles/:id/vote', (request, response, next) => {
   .then(updatedPuzzle => {
     console.log("UpdatedPuzzle: ", updatedPuzzle)
     if (updatedPuzzle) {
-      response.json(updatedPuzzle);
+      response.json(updatedPuzzle)
     } else {      
-      response.status(404).end();
+      response.status(404).end()
     }
   })
   .catch(error => {
-    next(error);
-  });
+    next(error)
+  })
 })
 
 

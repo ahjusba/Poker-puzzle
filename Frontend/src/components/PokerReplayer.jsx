@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import testJson from './testJson.json'
+// import testJson from './testJson.json'
 import handService from '../services/pokerNowHand'
 
 const PokerReplayer = () => {
@@ -8,7 +8,7 @@ const PokerReplayer = () => {
   const [currentState, setCurrentState] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const createGameStates = () => {
+  const createGameStates = (json) => {
     console.log("Creating gameStates...")
     var states = []
 
@@ -16,7 +16,7 @@ const PokerReplayer = () => {
     var board = []
     var players = []
     var totalMoney = 0
-    testJson.players.forEach((player) => {
+    json.players.forEach((player) => {
       totalMoney += player.stack
       players.push(player)
     })
@@ -24,7 +24,7 @@ const PokerReplayer = () => {
     states.push({ board: board, players: players, totalMoney: totalMoney, pot: 0 })
 
 
-    testJson.events.forEach((event) => {
+    json.events.forEach((event) => {
       if(states.length == 0) { console.error("GameState couldn't initialize") }
       //Copy the previous state as a starting reference
       var newState = structuredClone(states[states.length - 1])
@@ -83,14 +83,31 @@ const PokerReplayer = () => {
           break
         case 10:
           //Collect pot
-          player.actionDescription = "Wins pot"
-          player.stack += value
+          
+          newState.players.forEach((player) => {
+            player.actionDescription = ""
+            player.value = 0
+          })
+          player.actionDescription = "Collect pot"
+          player.stack += newState.pot
+          
+          break
+        case 11:
+          //Fold
+          player.actionDescription = "Folds"
+          player.value = 0
           break
         case 12:
           //Reveal cards
           break
         case 15:
-          //Action end
+          //Hand finished
+            
+          break
+        case 16:
+          //Uncalled bet
+          //Player has raised and others folded -> 
+          //player takes the raise amount over call back          
           break
         default:
           console.log('Unknown event type:', eventType);
@@ -128,15 +145,16 @@ const PokerReplayer = () => {
   }
 
   const getHandIdentifier = (url) => {
-    // Use a regular expression to extract the important identifier from the URL
-    const match = url.match(/\/hand\/([a-zA-Z0-9]+)(?:\?|$)/);
+    // Use a regular expression to extract the identifier after the last slash '/' in the URL
+    // Example URL: "https://www.pokernow.club/hand-replayer/shared-hand/qumalwsqnn9j-7b8497a7433b3be"
+    var match = url.match(/\/([^\/?]+)(?:\?|$)/)
     
     if (match && match[1]) {
-      const identifier = match[1];  // Extracted identifier (e.g., "crabswpxsqc0")      
+      const identifier = match[1]
       return identifier
     }
-
-    return null;
+  
+    return null
   }
 
   const handleHandSubmit = async (url) => {
@@ -148,19 +166,21 @@ const PokerReplayer = () => {
       return;
     }
     console.log("Hand identifier:", handId)
+
     try {
       // Use the handService to fetch hand data
       const data = await handService.fetchHandData(handId);
       console.log("Fetched JSON data from backend:", data);
-      
+      createGameStates(data)
+      setCurrentIndex(0)      
     } catch (error) {
       console.error("Error fetching JSON from backend:", error);
     }
   }
 
-  useEffect(() => {
-    createGameStates()
-  }, [])
+  // useEffect(() => {
+  //   createGameStates()
+  // }, [])
 
   useEffect(() => {  
     if(gameStates.length > 0) {
@@ -170,21 +190,22 @@ const PokerReplayer = () => {
 
   return (
     <div>
-      This is the replayer
+      <p>Please submit a poker hand from PokerNow</p>
+      <HandInputField handleHandSubmit={handleHandSubmit}/>
       {currentState ? (
         <>
-          <HandInputField handleHandSubmit={handleHandSubmit}/>
           <Players gameState={currentState} />
           <Board gameState={currentState} />
           <Pot gameState={currentState} />
+          <button onClick={() => nextState()}>Next</button>
+          <button onClick={() => previousState()}>Previous</button>
         </>
       ) :
       (
-        <p>No state available</p>
+        <></>
       )}
       
-      <button onClick={() => nextState()}>Next</button>
-      <button onClick={() => previousState()}>Previous</button>
+      
     </div>
   )
 }
