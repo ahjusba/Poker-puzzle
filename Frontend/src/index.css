@@ -12,7 +12,8 @@ html, body {
   background: linear-gradient(
     to right, 
     rgb(161, 36, 36),  /* Darker color on the left */
-    rgb(201, 76, 76) 50%,  /* Original color in the middle */
+    rgb(201, 76, 76) 30%,  /* Original color in the middle */
+    rgb(201, 76, 76) 70%,  /* Original color in the middle */
     rgb(161, 36, 36)  /* Darker color on the right */
   );
   color: white;
@@ -74,4 +75,5 @@ ul {
 p {
   margin: 0;
   padding: 0;
+  font-size: 48px;
 }

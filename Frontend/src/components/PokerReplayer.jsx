@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-// import testJson from './testJson.json'
-import handService from '../services/pokerNowHand'
 
-const PokerReplayer = () => {
+const PokerReplayer = ({data}) => {
 
   const [gameStates, setGameStates] = useState([])
   const [currentState, setCurrentState] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [warningMessage, setWarningMessage] = useState('')
 
   const createGameStates = (json) => {
-    console.log("Creating gameStates...")
+    console.log("Creating gameStates with json:", json)
     var states = []
 
     //Initialize
@@ -41,8 +40,9 @@ const PokerReplayer = () => {
 
       switch (eventType) {
         case 0:
-          player.actionDescription = "Check"
           //Check
+          player.actionDescription = "Check"
+          player.value = 0
           break
         case 2:
           //Small blind
@@ -53,6 +53,12 @@ const PokerReplayer = () => {
         case 3:
           //Big blind
           player.actionDescription = "Post SB"
+          player.stack = previousStack - (value - previousValue)
+          player.value = value
+          break
+        case 6:
+          //Straddle
+          player.actionDescription = "Post Straddle"
           player.stack = previousStack - (value - previousValue)
           player.value = value
           break
@@ -79,49 +85,60 @@ const PokerReplayer = () => {
             player.actionDescription = ""
             player.value = 0
           })
-
           break
         case 10:
-          //Collect pot
-          
+          //Collect pot          
           newState.players.forEach((player) => {
             player.actionDescription = ""
             player.value = 0
           })
           player.actionDescription = "Collect pot"
-          player.stack += newState.pot
+          player.stack += value
           
           break
         case 11:
           //Fold
-          player.actionDescription = "Folds"
+          player.actionDescription = "Fold"
           player.value = 0
           break
         case 12:
           //Reveal cards
+          newState.players.forEach((player) => {
+            player.actionDescription = ""
+            player.value = 0
+          })
+          player.actionDescription = "Reveal cards"
+          break
+        case 14:
+          //Run-it-twice decision
+          var approved = event.payload.approved === true ? "approved" : "not approved"
+          newState.players.forEach((player) => {
+            player.actionDescription = `run it twice ${approved}`
+            player.value = 0
+          })
           break
         case 15:
           //Hand finished
-            
+          newState.players.forEach((player) => {
+            player.actionDescription = "Hand finished"
+            player.value = 0
+          })
           break
         case 16:
           //Uncalled bet
-          //Player has raised and others folded -> 
-          //player takes the raise amount over call back          
+          //Player has raised and others folded -> player takes the raise amount over call back
+          player.actionDescription = "Return uncalled bet"
+          player.value = value
+          player.stack += value
           break
         default:
-          console.log('Unknown event type:', eventType);
+          console.log('Unknown event type:', eventType)
+          setWarningMessage("Unknown action type. Please send the URL to Jussi for investigation.")
           break
       }
 
-      var pot = totalMoney;
-      newState.players.forEach((player) => {
-        pot -= player.stack
-      })
-      newState.pot = pot
-
+      newState.pot = totalMoney - newState.players.reduce((sum, player) => sum + player.stack, 0)
       states.push(newState)
-      // console.log(newState)
     })
 
     console.log("Setting gameStates with ", states)
@@ -129,7 +146,7 @@ const PokerReplayer = () => {
   }
 
   const nextState = () => {
-    const newIndex = currentIndex + 1;
+    const newIndex = currentIndex + 1
     if(newIndex >= gameStates.length) {
       return
     }
@@ -137,50 +154,12 @@ const PokerReplayer = () => {
   }
 
   const previousState = () => {
-    const newIndex = currentIndex - 1;
+    const newIndex = currentIndex - 1
     if(newIndex < 0) {
       return
     }
     setCurrentIndex(newIndex)
   }
-
-  const getHandIdentifier = (url) => {
-    // Use a regular expression to extract the identifier after the last slash '/' in the URL
-    // Example URL: "https://www.pokernow.club/hand-replayer/shared-hand/qumalwsqnn9j-7b8497a7433b3be"
-    var match = url.match(/\/([^\/?]+)(?:\?|$)/)
-    
-    if (match && match[1]) {
-      const identifier = match[1]
-      return identifier
-    }
-  
-    return null
-  }
-
-  const handleHandSubmit = async (url) => {
-    console.log("URL submitted:", url)
-    const handId = getHandIdentifier(url)  
-
-    if (!handId) {
-      console.error("Invalid URL format.");
-      return;
-    }
-    console.log("Hand identifier:", handId)
-
-    try {
-      // Use the handService to fetch hand data
-      const data = await handService.fetchHandData(handId);
-      console.log("Fetched JSON data from backend:", data);
-      createGameStates(data)
-      setCurrentIndex(0)      
-    } catch (error) {
-      console.error("Error fetching JSON from backend:", error);
-    }
-  }
-
-  // useEffect(() => {
-  //   createGameStates()
-  // }, [])
 
   useEffect(() => {  
     if(gameStates.length > 0) {
@@ -188,10 +167,14 @@ const PokerReplayer = () => {
     }
   }, [currentIndex, gameStates])
 
+  useEffect(() => {
+    if(data) {
+      createGameStates(data)
+    }
+  }, [])
+
   return (
     <div>
-      <p>Please submit a poker hand from PokerNow</p>
-      <HandInputField handleHandSubmit={handleHandSubmit}/>
       {currentState ? (
         <>
           <Players gameState={currentState} />
@@ -205,29 +188,16 @@ const PokerReplayer = () => {
         <></>
       )}
       
-      
+      {warningMessage && <WarningMessage warningMessage={warningMessage}/>}
     </div>
   )
 }
 
-const HandInputField = ({ handleHandSubmit }) => {
-  const [url, setUrl] = useState("")
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    handleHandSubmit(url)
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        placeholder="Enter URL"
-        />
-      <button type="submit">Submit</button>
-    </form>
+const WarningMessage = ({ warningMessage }) => {
+  return(
+    <div>
+      <p>{warningMessage}</p>
+    </div>
   )
 }
 
@@ -240,16 +210,26 @@ const Pot = ({ gameState }) => {
 }
 
 const Board = ({ gameState }) => {
-
-  var boardString = ""
+  //We might have two boards if run-it-twice
+  var board1String = ""
+  var board2String = ""
+  var cardCount = 0
   gameState?.board?.forEach((card) => {
-    boardString += `${card} ` 
+    cardCount += 1
+    if(cardCount <= 5) {
+      board1String += `${card} ` 
+    } else {
+      board2String += `${card} ` 
+    }
+
   })
 
   return (
-    <div>
-      {boardString}
-    </div>
+    <p>
+      {board1String}
+      <br></br>
+      {board2String}
+    </p>
   )
 }
 
@@ -268,16 +248,10 @@ const Players = ({ gameState }) => {
   )
 }
 
-const Player = ({ player }) => {
-  const nick = player.name
-  const cards = player.hand
-  const stack = player.stack
-  const value = player.value
-  const actionDescription = player.actionDescription
-
+const Player = ({ player: { name, hand, stack, value, actionDescription } }) => {
   return(
     <div>
-      <p>{nick} [{cards ? cards : ""}] ({stack}) {actionDescription} {value == 0 ? "" : value}</p>
+      <p>{name} [{hand || ''}] ({stack}) {actionDescription} {value ? value : ""}</p>
     </div>
   )
 }
