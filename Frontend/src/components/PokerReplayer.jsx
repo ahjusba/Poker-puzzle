@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const PokerReplayer = ({data}) => {
+const PokerReplayer = ({data, saveHandToDatabase}) => {
 
   const [gameStates, setGameStates] = useState([])
   const [currentState, setCurrentState] = useState(null)
@@ -161,6 +161,44 @@ const PokerReplayer = ({data}) => {
     setCurrentIndex(newIndex)
   }
 
+  const determineHeroSeat = () => {    
+    //Note that the gameStates array has one extra state (initial state), which is why
+    //we use "currentIndex" instead of "currentIndex + 1" here.
+    if(data.events.length <= currentIndex) {
+      window.alert("This is the last action.")
+      return null
+    }
+    const nextAction = data.events[currentIndex].payload
+    console.log("Current event: ", nextAction)
+    const heroSeat = nextAction.seat
+    if(!heroSeat) {
+      window.alert("Next game phase doesn't include a player action.")
+      //TODO: this still allows some phases, such as "collect pot" where one could
+      //submit a hand in theory - though it wouldn't make sense to do thus
+      return null
+    }
+    const heroName = data.players.find(p => p.seat === heroSeat).name
+    console.log("Hero name:", heroName)
+    console.log("Current seat:", heroSeat)
+    return heroSeat
+  }
+
+  const submitHand = () => {
+
+    const userConfirmed = window.confirm("Do you want to submit this spot in the hand?")
+
+    if(!userConfirmed) {
+      return
+    }
+
+    const handPoint = currentIndex
+
+    const heroSeat = determineHeroSeat()
+    if(!heroSeat) return
+    console.log("Submitting hand")
+    saveHandToDatabase(handPoint)
+  }
+
   useEffect(() => {  
     if(gameStates.length > 0) {
       setCurrentState(gameStates[currentIndex])
@@ -171,7 +209,7 @@ const PokerReplayer = ({data}) => {
     if(data) {
       createGameStates(data)
     }
-  }, [])
+  }, [data])
 
   return (
     <div>
@@ -182,6 +220,7 @@ const PokerReplayer = ({data}) => {
           <Pot gameState={currentState} />
           <button onClick={() => nextState()}>Next</button>
           <button onClick={() => previousState()}>Previous</button>
+          <Submit submitHand={submitHand} />
         </>
       ) :
       (
@@ -193,7 +232,18 @@ const PokerReplayer = ({data}) => {
   )
 }
 
+const Submit = ({ submitHand }) => {
+  return(
+    <div>
+      <br></br>
+      <button onClick={() => submitHand()}>Submit</button>      
+    </div>
+  )
+  
+}
+
 const WarningMessage = ({ warningMessage }) => {
+  
   return(
     <div>
       <p>{warningMessage}</p>

@@ -21,6 +21,16 @@ const vote = (id, voteId) => {
           .then(response => response.data)          
 }
 
+const submit = (handJson) => {
+  console.log("POSTing handJson to ", url)
+  return axios.post(url, handJson)
+    .then(response => response.data)
+    .catch(error => {
+      console.error("Error submitting data to the database", error)
+      throw error
+    })
+}
+
 // const update = (id, button) => {
 //   return axios
 //     .put(`${url}/${id}`, button)
@@ -38,4 +48,4 @@ const vote = (id, voteId) => {
 //     .delete(`${url}/${id}`)
 // }
 
-export default { getAll, getId, vote }
+export default { getAll, getId, vote, submit }

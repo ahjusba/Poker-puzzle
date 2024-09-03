@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import puzzlesService from '../services/puzzles'
+import puzzleService from '../services/puzzles'
 import '../index.css'
 
 const PuzzlePage = () => {
@@ -32,7 +32,7 @@ const PuzzlePage = () => {
 
     //Retrieve today's puzzle
     console.log("Getting puzzle for date ", date)
-    puzzlesService
+    puzzleService
       .getId(date)
       .then(puzzle => {
         console.log("Promise fulfilled with data: ", puzzle)
@@ -44,7 +44,7 @@ const PuzzlePage = () => {
   }, [])    
 
   const updateVotes = (voteId) => {
-    puzzlesService
+    puzzleService
       .vote(dailyPuzzle.id, voteId)
       .then(response => {
         console.log("Vote response: ", response)

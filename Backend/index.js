@@ -57,6 +57,7 @@ app.get('/api/puzzles', (request, response) => {
   })
 })
 
+
 app.get('/api/puzzles/:id', (request, response, next) => {
   console.log("Getting puzzle with date", request.params.id)
   let date = request.params.id
@@ -71,6 +72,34 @@ app.get('/api/puzzles/:id', (request, response, next) => {
       }
   })
   .catch(error => next(error))
+})
+
+app.post('/api/puzzles', (request, response) => {
+  const newPuzzleData = request.body
+  console.log(`POSTing new puzzle with data ${newPuzzleData}`)
+
+  // Find all puzzles to determine the next ID
+  Puzzle.find({})
+    .then(puzzles => {
+      // Determine the next ID based on the existing puzzles
+      const nextId = puzzles.length > 0 ? Math.max(...puzzles.map(p => p.id)) + 1 : 0
+
+      // Create a new puzzle instance with the next ID
+      const newPuzzle = new Puzzle({
+        id: nextId,
+        ...newPuzzleData  // Spread operator to add other properties from the request body
+      })
+
+      // Save the new puzzle to the database
+      return newPuzzle.save()
+    })
+    .then(savedPuzzle => {
+      response.status(201).json(savedPuzzle)
+    })
+    .catch(error => {
+      console.error('Error saving the new puzzle:', error)
+      response.status(500).json({ error: 'Internal server error' })
+    })
 })
 
 app.put('/api/puzzles/:id/vote', (request, response, next) => {
