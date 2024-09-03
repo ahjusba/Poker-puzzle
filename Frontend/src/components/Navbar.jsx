@@ -1,14 +1,22 @@
-import '../index.css'
+import './Navbar.css'
 import { Link } from 'react-router-dom'
+import { stack as Menu } from 'react-burger-menu'
 
 const Navbar = () => {
   return (
-    <nav>
-      <ul>
-        <li><Link to="/puzzle">Puzzle</Link></li>
-        <li><Link to="/submit">Submit</Link></li>
-      </ul>
-    </nav>
+    <Menu right>
+      <CustomLink to="/">home</CustomLink>
+      <CustomLink to="/puzzle">puzzle</CustomLink>
+      <CustomLink to="/submit">submit</CustomLink>
+    </Menu>
+  )
+}
+
+const CustomLink = ({to, children, ...props}) => {
+  return (
+      <Link to={to} {...props}>
+        {children}
+      </Link>
   )
 }
 

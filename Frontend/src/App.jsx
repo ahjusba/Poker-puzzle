@@ -6,8 +6,8 @@ import SubmitPage from './pages/SubmitPage'
 const App = () => {
   return (
     <Router>
+      <Navbar />
       <div>
-        <Navbar />
         <Routes>
           <Route path="/puzzle" element={<PuzzlePage />} />
           <Route path="/submit" element={<SubmitPage />} />
