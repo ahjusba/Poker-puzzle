@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const PokerReplayer = ({data, saveHandToDatabase}) => {
+const PokerReplayer = ({ data, saveHandToDatabase, viewOnly }) => {
 
   const [gameStates, setGameStates] = useState([])
   const [currentState, setCurrentState] = useState(null)
@@ -220,7 +220,7 @@ const PokerReplayer = ({data, saveHandToDatabase}) => {
           <Pot gameState={currentState} />
           <button onClick={() => nextState()}>Next</button>
           <button onClick={() => previousState()}>Previous</button>
-          <Submit submitHand={submitHand} />
+          { !viewOnly && <Submit submitHand={submitHand} /> }
         </>
       ) :
       (

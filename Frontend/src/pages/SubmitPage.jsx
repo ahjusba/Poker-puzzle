@@ -60,7 +60,7 @@ const SubmitPage = () => {
     <div>
       <p>Please provide a PokerNow hand-history link</p>
       <HandInputField handleUrlInput={handleUrlInput}/>
-      {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase}/>}
+      {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase} viewOnly={false}/>}
     </div>
   )
 }

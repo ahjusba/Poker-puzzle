@@ -1,39 +1,18 @@
 import { useState, useEffect } from 'react'
 import puzzleService from '../services/puzzles'
 import '../index.css'
+import PokerReplayer from '../components/pokerReplayer'
 
 const PuzzlePage = () => {
 
-  const [dailyPuzzle, setDailyPuzzle] = useState([])
+  const [dailyPuzzle, setDailyPuzzle] = useState(null)
   const [hasVoted, setHasVoted] = useState(false)
 
-  const getDate = () => {
-    const date = new Date()
-    const year = date.getFullYear().toString().slice(-2) // Get last 2 digits of the year
-    const month = (date.getMonth() + 1).toString().padStart(2, '0') // Get month and ensure it's 2 digits
-    const day = date.getDate().toString().padStart(2, '0') // Get day and ensure it's 2 digits
-    return `${year}${month}${day}`
-  }
-
-  const date = getDate() //format YYMMDD
-
   useEffect(() => {
-    //Has the user voted already today -> affects rendering
-    const storedDate = localStorage.getItem('voteDate')
-    const votedStatus = localStorage.getItem('hasVoted') === 'true'
-
-    if(storedDate === date) {
-      setHasVoted(votedStatus)
-    } else {
-      localStorage.removeItem('voteDate')
-      localStorage.removeItem('hasVoted')
-      setHasVoted(false)
-    }
-
     //Retrieve today's puzzle
-    console.log("Getting puzzle for date ", date)
+    console.log("Getting latest puzzle")
     puzzleService
-      .getId(date)
+      .getLatest()
       .then(puzzle => {
         console.log("Promise fulfilled with data: ", puzzle)
         setDailyPuzzle(puzzle)
@@ -50,7 +29,7 @@ const PuzzlePage = () => {
         console.log("Vote response: ", response)
         setDailyPuzzle(response)
         setHasVoted(true)
-        localStorage.setItem('voteDate', date)
+        // localStorage.setItem('voteDate', date)
         localStorage.setItem('hasVoted', 'true')
       })
       .catch(error => {
@@ -64,17 +43,10 @@ const PuzzlePage = () => {
 
   return (
     <div>
-      <Title puzzle={dailyPuzzle}/>
-      <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} />
+      { dailyPuzzle && <p>found puzzle</p>}
+      { dailyPuzzle && <PokerReplayer data={dailyPuzzle} saveHandToDatabase={null} viewOnly={true}/>}
+      {/* <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} /> */}
     </div>
-  )
-}
-
-const Title = ({puzzle}) => {
-  return (
-    <h1>
-      {puzzle.puzzleDescription}
-    </h1>
   )
 }
 
