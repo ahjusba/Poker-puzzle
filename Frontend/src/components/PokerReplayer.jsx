@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react'
 
-const PokerReplayer = ({ data, saveHandToDatabase, viewOnly }) => {
-
+const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
+  //https://www.pokernow.club/hand-replayer/game/pglcuV_rJVtWY2nUQx1TF2FSH current hands
   const [gameStates, setGameStates] = useState([])
   const [currentState, setCurrentState] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [warningMessage, setWarningMessage] = useState('')
+
+  const canUserPressNext = () => {
+    return(hasVoted || !viewOnly || currentIndex < data.puzzlePoint)
+  }
+
+  const showCards = (playerSeat) => {
+    return(hasVoted || !viewOnly || playerSeat === data.heroSeat)
+  }
 
   const createGameStates = (json) => {
     console.log("Creating gameStates with json:", json)
@@ -196,18 +204,21 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly }) => {
     const heroSeat = determineHeroSeat()
     if(!heroSeat) return
     console.log("Submitting hand")
-    saveHandToDatabase(handPoint)
+    saveHandToDatabase(handPoint, heroSeat)
   }
 
   useEffect(() => {  
     if(gameStates.length > 0) {
       setCurrentState(gameStates[currentIndex])
-    }
+    }    
   }, [currentIndex, gameStates])
 
   useEffect(() => {
     if(data) {
       createGameStates(data)
+    }
+    if(viewOnly) {
+      setCurrentIndex(data.puzzlePoint || 0)
     }
   }, [data])
 
@@ -215,10 +226,10 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly }) => {
     <div>
       {currentState ? (
         <>
-          <Players gameState={currentState} />
+          <Players gameState={currentState} showCards={showCards} />
           <Board gameState={currentState} />
           <Pot gameState={currentState} />
-          <button onClick={() => nextState()}>Next</button>
+          { canUserPressNext() && <button onClick={() => nextState()}>Next</button> }
           <button onClick={() => previousState()}>Previous</button>
           { !viewOnly && <Submit submitHand={submitHand} /> }
         </>
@@ -283,13 +294,14 @@ const Board = ({ gameState }) => {
   )
 }
 
-const Players = ({ gameState }) => {
+const Players = ({ gameState, showCards }) => {
   return (
     <ul>      
       {gameState?.players?.map(player => {
         return (
           <Player 
             player={player}
+            showCards={showCards}
             key={player.id}
           />
         )
@@ -298,10 +310,10 @@ const Players = ({ gameState }) => {
   )
 }
 
-const Player = ({ player: { name, hand, stack, value, actionDescription } }) => {
+const Player = ({ player: { name, hand, stack, value, actionDescription, seat }, showCards }) => {
   return(
     <div>
-      <p>{name} [{hand || ''}] ({stack}) {actionDescription} {value ? value : ""}</p>
+      <p>{name} [{ showCards(seat) ? hand || '#x#x' : '#x#x'}] ({stack}) {actionDescription} {value ? value : ""}</p>
     </div>
   )
 }

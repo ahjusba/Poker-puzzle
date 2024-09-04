@@ -40,9 +40,10 @@ const SubmitPage = () => {
     }
   }
 
-  const saveHandToDatabase = (puzzlePoint) => {
+  const saveHandToDatabase = (puzzlePoint, heroSeat) => {
     //puzzlePoint is the point in hand meant for puzzle.
     handJson.puzzlePoint = puzzlePoint
+    handJson.heroSeat = heroSeat
     console.log("saving hand to database with puzzlepoint", puzzlePoint)
 
     puzzleService.submit(handJson)
@@ -60,7 +61,7 @@ const SubmitPage = () => {
     <div>
       <p>Please provide a PokerNow hand-history link</p>
       <HandInputField handleUrlInput={handleUrlInput}/>
-      {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase} viewOnly={false}/>}
+      {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase} viewOnly={false} hasVoted={true}/>}
     </div>
   )
 }

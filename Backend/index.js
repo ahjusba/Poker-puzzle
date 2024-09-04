@@ -57,7 +57,7 @@ app.get('/api/puzzles', (request, response) => {
     .sort({ puzzle_id: -1 }) // Sort by 'id' in descending order
     .then(latestPuzzle => {
       if (latestPuzzle) {
-        response.json(latestPuzzle)
+        response.json({ ...latestPuzzle.toObject(), isLatest: true })
       } else {
         response.status(404).json({ message: 'No puzzles found' })
       }
@@ -69,19 +69,27 @@ app.get('/api/puzzles', (request, response) => {
 })
 
 
-app.get('/api/puzzles/:id', (request, response, next) => {
-  console.log("Getting puzzle with puzzle_id", request.params.id)
-  let puzzle_id = request.params.id
-  Puzzle.find({ puzzle_id: puzzle_id })
-    .then(puzzles => {
-      if (puzzles && puzzles.length > 0) {
-        console.log(puzzles)
-        response.json(puzzles[0])
-      } else {
-        response.status(404).end()
-      }
-  })
-  .catch(error => next(error))
+app.get('/api/puzzles/:id', async (request, response, next) => {
+  const puzzle_id = Number(request.params.id)
+
+  try {
+    const puzzle = await Puzzle.findOne({ puzzle_id: puzzle_id }).exec()
+
+    if (puzzle) {
+      console.log(`Found puzzle id ${puzzle.puzzle_id} with type of ${typeof(puzzle.puzzle_id)}`)
+
+      // Check if there is any puzzle with a greater id
+      const existsGreaterId = await Puzzle.exists({ puzzle_id: { $gt: puzzle_id } })
+      const isLatest = !existsGreaterId
+
+      console.log("IsLatest: ", isLatest)
+      response.json({ ...puzzle.toObject(), isLatest: isLatest })
+    } else {
+      response.status(404).end()
+    }
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.post('/api/puzzles', (request, response) => {
@@ -101,7 +109,7 @@ app.post('/api/puzzles', (request, response) => {
 
       // Create a new puzzle instance with the next ID
       const newPuzzle = new Puzzle({
-        puzzle_id: highestPuzzleId + 1,
+        puzzle_id: Number(highestPuzzleId + 1),
         ...newPuzzleData
       })
 
