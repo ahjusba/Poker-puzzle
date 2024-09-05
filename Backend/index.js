@@ -4,6 +4,7 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const Puzzle = require('./models/puzzle')
+const puzzle = require('./models/puzzle')
 
 app.use(cors())
 app.use(express.json())
@@ -112,7 +113,7 @@ app.post('/api/puzzles', (request, response) => {
         puzzle_id: Number(highestPuzzleId + 1),
         ...newPuzzleData
       })
-
+      console.log("NewPuzzle options: ", newPuzzle.options)
       return newPuzzle.save()
     })
     .then(savedPuzzle => {
@@ -125,22 +126,24 @@ app.post('/api/puzzles', (request, response) => {
 })
 
 app.put('/api/puzzles/:id/vote', (request, response, next) => {
-  const { id: puzzleId } = request.params
-  const { voteId } = request.body
-  console.log(`Searching for document with puzzle id ${puzzleId} and voteId ${voteId}`)
+  const { id: puzzle_id } = request.params
+  const { voteId: vote_id } = request.body
+  console.log(`Searching for document with puzzle id ${puzzle_id} and voteId ${vote_id}`)
 
   Puzzle.findOneAndUpdate(
     {
-      _id: puzzleId,
-      'options._id': voteId
+      puzzle_id: puzzle_id,
+      'options._id': vote_id
     },
     {
       $inc: { 'options.$.votes': 1 }
     },
     { new: true }
   )
+  // Puzzle.findOne({puzzle_id: puzzle_id})
   .then(updatedPuzzle => {
     console.log("UpdatedPuzzle: ", updatedPuzzle)
+    console.log("Updated puzzle id:", updatedPuzzle.puzzle_id)
     if (updatedPuzzle) {
       response.json(updatedPuzzle)
     } else {      

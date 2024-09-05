@@ -10,7 +10,7 @@ const PuzzlePage = () => {
   const [hasVoted, setHasVoted] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const navigate = useNavigate()
-
+  console.log("Has voted: ", hasVoted)
   useEffect(() => {
     const fetchPuzzle = async () => {
       try {
@@ -42,15 +42,31 @@ const PuzzlePage = () => {
     }
   }, [notFound])  
 
+  useEffect(() => {
+    const votedPuzzles = JSON.parse(localStorage.getItem('votedPuzzles')) || []
+
+    if (puzzle && votedPuzzles.includes(puzzle.puzzle_id)) {
+      setHasVoted(true)
+    } else {
+      setHasVoted(false)
+    }
+  }, [puzzle])
+
+  const updateLocalStorage = (puzzle_id) => {
+    const storedArray = JSON.parse(localStorage.getItem('votedPuzzles')) || []  
+    if (!storedArray.includes(puzzle_id)) {
+      storedArray.push(puzzle_id)
+      localStorage.setItem('votedPuzzles', JSON.stringify(storedArray))
+    }
+  }
+
   const updateVotes = (voteId) => {
     puzzleService
-      .vote(puzzle.id, voteId)
+      .vote(puzzle.puzzle_id, voteId)
       .then(response => {
         console.log("Vote response: ", response)
         setPuzzle(response)
-        setHasVoted(true)
-        // localStorage.setItem('voteDate', date)
-        localStorage.setItem('hasVoted', 'true')
+        updateLocalStorage(puzzle.puzzle_id)
       })
       .catch(error => {
         console.log("error: ", error.response.data.error)
@@ -82,7 +98,7 @@ const PuzzlePage = () => {
       { !puzzle.isLatest && <NavigateButton text="next hand" onNavigateClick={handleNavigateClick} nextHand={true} />}
       <Title puzzle_id={puzzle.puzzle_id} />
       <PokerReplayer data={puzzle} saveHandToDatabase={null} viewOnly={true} hasVoted={false}/>
-      {/* <OptionButtons handleClick={handleButtonClick} optionButtons={dailyPuzzle?.options || []} hasVoted={hasVoted} /> */}
+      <OptionButtons handleClick={handleButtonClick} optionButtons={puzzle.options || []} hasVoted={hasVoted} />
     </div>
   )
 }
@@ -106,11 +122,10 @@ const OptionButtons = ({ handleClick, optionButtons, hasVoted }) => {
           <OptionButton 
             handleClick={handleClick} 
             action={optionButton.action} 
-            sizing={optionButton.sizing} 
             hasVoted={hasVoted}
             votes={optionButton.votes}
-            id={optionButton.id}
-            key={optionButton.id}
+            id={optionButton._id}
+            key={optionButton._id}
           />
         )
       })}
@@ -118,14 +133,14 @@ const OptionButtons = ({ handleClick, optionButtons, hasVoted }) => {
   )
 }
 
-const OptionButton = ({handleClick, action, sizing, hasVoted, votes, id}) => {
+const OptionButton = ({handleClick, action, hasVoted, votes, id}) => {  
   return (
     <div className="voteResultBox">
       {hasVoted ? (        
-        <p>{action} <br></br>{sizing}votes: {votes}</p>
+        <p>{action} votes: {votes}</p>
       ) : (
         <button onClick={() => handleClick(id)}>
-          {action} {sizing}
+          {action}
         </button>
       )}
     </div>

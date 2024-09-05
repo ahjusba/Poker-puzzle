@@ -7,6 +7,12 @@ import handService from '../services/pokerNowHand'
 const SubmitPage = () => {
 
   const [handJson, setHandJson] = useState(null)
+  const [votingOptions, setVotingOptions] = useState(null)
+
+  const handleToggleChange = (options) => {
+    console.log("Options: ", options)
+    setVotingOptions(options)
+  }
 
   const getHandIdentifier = (url) => {
     // Use a regular expression to extract the identifier after the last slash '/' in the URL
@@ -22,6 +28,9 @@ const SubmitPage = () => {
   }
 
   const handleUrlInput = async (url) => {
+
+    //TODO delete command
+
     const handId = getHandIdentifier(url)  
 
     if (!handId) {
@@ -44,6 +53,9 @@ const SubmitPage = () => {
     //puzzlePoint is the point in hand meant for puzzle.
     handJson.puzzlePoint = puzzlePoint
     handJson.heroSeat = heroSeat
+    handJson.options = votingOptions
+    console.log("Saving hand: ", handJson)
+    console.log("Saving using options:", handJson.options)
     console.log("saving hand to database with puzzlepoint", puzzlePoint)
 
     puzzleService.submit(handJson)
@@ -62,6 +74,7 @@ const SubmitPage = () => {
       <p>Please provide a PokerNow hand-history link</p>
       <HandInputField handleUrlInput={handleUrlInput}/>
       {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase} viewOnly={false} hasVoted={true}/>}
+      <OptionToggles handleToggleChange={handleToggleChange} />
     </div>
   )
 }
@@ -84,6 +97,46 @@ const HandInputField = ({ handleUrlInput }) => {
         />
       <button type="submit">Set URL</button>
     </form>
+  )
+}
+
+const OptionToggles = ({ handleToggleChange }) => {
+  const options = ['fold', 'check', 'call', 'bet', 'raise']
+  
+  const [activeOptions, setActiveOptions] = useState(options)
+
+  const handleToggle = (option) => {
+    let updatedOptions
+    if (activeOptions.includes(option)) {
+      updatedOptions = activeOptions.filter((opt) => opt !== option)
+    } else {
+      updatedOptions = [...activeOptions, option]
+    }
+    setActiveOptions(updatedOptions)
+    
+    const formattedOptions = updatedOptions.map((opt) => ({ action: opt, votes: 0 }))
+    handleToggleChange(formattedOptions)
+  }
+
+  useEffect(() => {
+    handleToggleChange(activeOptions)
+  }, [])
+
+  return (
+    <div>
+      {options.map((option) => (
+        <div key={option}>
+          <label>
+            <input
+              type="checkbox"
+              checked={activeOptions.includes(option)}
+              onChange={() => handleToggle(option)}
+            />
+            {option}
+          </label>
+        </div>
+      ))}
+    </div>
   )
 }
 
