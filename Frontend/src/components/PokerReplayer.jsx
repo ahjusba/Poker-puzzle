@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import Card from './Card'
 import './PokerReplayer.css'
+import classNames from 'classnames'
 
 const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
   //https://www.pokernow.club/hand-replayer/game/pglcuV_rJVtWY2nUQx1TF2FSH current hands
@@ -318,8 +320,23 @@ const Player = ({ player: { name, hand, stack, value, actionDescription, seat },
     <div className="player">
       <p className="playerItem">{name}</p>
       <p className="playerItem">({stack})</p>
-      <p className="playerItem">[{ showCards(seat) ? hand || '#x#x' : '#x#x'}]</p>
+      <Hand hand={hand} showCards={showCards(seat)}/>
       <p className="actionItem">{actionDescription} {value ? value : ""}</p>
+    </div>
+  )
+}
+
+const Hand = ({ hand, showCards }) => {
+
+  if(!hand) {
+    hand = ["Xx", "Xx"]
+  }
+
+  return(
+    <div className={classNames('hand', 'playerItem')}>
+      {hand.map((card, index) => (
+        <Card key={index} card={card} showCards={showCards}/>
+      ))}
     </div>
   )
 }

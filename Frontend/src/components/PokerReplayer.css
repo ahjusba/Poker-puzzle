@@ -18,14 +18,23 @@
   }
 }
 
+@media (min-width: 1268px) { /* Adjust the min-width as needed for your definition of "mobile width" */
+  .players {
+    width: 25%;
+  }
+}
+
 .players ul {
  width: 100%; 
 }
 
 .player {
-  /* justify-content: space-evenly; */
+  padding: 0.5em;
+  background-color: rgb(0,0,0,0.1);
+  margin-top: 0.6em;
   display: flex;
   flex-direction: row;
+  align-items: center;    
 }
 
 .playerItem {
@@ -35,6 +44,13 @@
 .actionItem {
   flex: 1.5;
   text-align: center;
+}
+
+.hand {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 0.3em;
 }
 
 .board {
