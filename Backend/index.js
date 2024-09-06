@@ -140,7 +140,6 @@ app.put('/api/puzzles/:id/vote', (request, response, next) => {
     },
     { new: true }
   )
-  // Puzzle.findOne({puzzle_id: puzzle_id})
   .then(updatedPuzzle => {
     console.log("UpdatedPuzzle: ", updatedPuzzle)
     console.log("Updated puzzle id:", updatedPuzzle.puzzle_id)

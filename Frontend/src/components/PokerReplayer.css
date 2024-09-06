@@ -1,0 +1,46 @@
+.replayer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5vh;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 90%;
+}
+@media (min-width: 768px) { /* Adjust the min-width as needed for your definition of "mobile width" */
+  .players {
+    width: 40%;
+  }
+}
+
+.players ul {
+ width: 100%; 
+}
+
+.player {
+  /* justify-content: space-evenly; */
+  display: flex;
+  flex-direction: row;
+}
+
+.playerItem {
+  flex: 1;
+}
+
+.actionItem {
+  flex: 1.5;
+  text-align: center;
+}
+
+.board {
+
+}
+
+.pot {
+
+}

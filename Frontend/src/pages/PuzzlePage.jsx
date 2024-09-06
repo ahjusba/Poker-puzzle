@@ -3,6 +3,8 @@ import puzzleService from '../services/puzzles'
 import { useNavigate, useParams } from 'react-router-dom'
 import '../index.css'
 import PokerReplayer from '../components/pokerReplayer'
+import { IoCaretForwardOutline, IoCaretBackOutline } from "react-icons/io5"
+import classNames from 'classnames'
 
 const PuzzlePage = () => {
   const { id } = useParams()
@@ -93,24 +95,41 @@ const PuzzlePage = () => {
   if(!puzzle) return <p>Loading...</p>
 
   return (
-    <div>
-      { puzzle.puzzle_id !== 0 && <NavigateButton text="previous hand" onNavigateClick={handleNavigateClick} nextHand={false} />}
-      { !puzzle.isLatest && <NavigateButton text="next hand" onNavigateClick={handleNavigateClick} nextHand={true} />}
-      <Title puzzle_id={puzzle.puzzle_id} />
+    <div>      
+      <PuzzleBrowser puzzle_id={puzzle.puzzle_id} puzzle={puzzle} onNavigateClick={handleNavigateClick} />
       <PokerReplayer data={puzzle} saveHandToDatabase={null} viewOnly={true} hasVoted={false}/>
       <OptionButtons handleClick={handleButtonClick} optionButtons={puzzle.options || []} hasVoted={hasVoted} />
     </div>
   )
 }
 
-const NavigateButton = ({ text, onNavigateClick, nextHand }) => {
-  return (
-    <button onClick={() => onNavigateClick(nextHand)}>{text}</button>
+const NavigateButton = ({ onNavigateClick, nextHand, className }) => {
+  console.log("ClassName: ", className)
+  return (    
+    <button onClick={() => onNavigateClick(nextHand)} className={className}>
+      {nextHand ? <IoCaretForwardOutline size={40} color="white"/> : <IoCaretBackOutline size={40} color="white"/>}    
+    </button>
   )
 }
-const Title = ({ puzzle_id }) => {
+
+const PuzzleBrowser = ({ puzzle_id, puzzle, onNavigateClick }) => {
+  const backIsHidden = puzzle_id === 0
+  const forwardIsHidden = puzzle.isLatest
+
   return (
-    <h1>Hand #{puzzle_id}</h1>
+    <div className="puzzleBrowser">
+      <NavigateButton 
+        onNavigateClick={onNavigateClick} 
+        nextHand={false} 
+        className={classNames({ hidden: backIsHidden })}
+      />
+      <h1>Hand #{puzzle_id}</h1>
+      <NavigateButton 
+        onNavigateClick={onNavigateClick} 
+        nextHand={true} 
+        className={classNames({ hidden: forwardIsHidden })} 
+      />
+    </div>
   )
 }
 

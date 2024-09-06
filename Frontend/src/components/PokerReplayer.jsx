@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import './PokerReplayer.css'
 
 const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
   //https://www.pokernow.club/hand-replayer/game/pglcuV_rJVtWY2nUQx1TF2FSH current hands
@@ -223,7 +224,7 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
   }, [data])
 
   return (
-    <div>
+    <div className="replayer">
       {currentState ? (
         <>
           <Players gameState={currentState} showCards={showCards} />
@@ -296,24 +297,29 @@ const Board = ({ gameState }) => {
 
 const Players = ({ gameState, showCards }) => {
   return (
-    <ul>      
-      {gameState?.players?.map(player => {
-        return (
-          <Player 
-            player={player}
-            showCards={showCards}
-            key={player.id}
-          />
-        )
-      })}
-    </ul>
+    <div className="players">
+      <ul>      
+        {gameState?.players?.map(player => {
+          return (
+            <Player 
+              player={player}
+              showCards={showCards}
+              key={player.id}
+            />
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 
 const Player = ({ player: { name, hand, stack, value, actionDescription, seat }, showCards }) => {
   return(
-    <div>
-      <p>{name} [{ showCards(seat) ? hand || '#x#x' : '#x#x'}] ({stack}) {actionDescription} {value ? value : ""}</p>
+    <div className="player">
+      <p className="playerItem">{name}</p>
+      <p className="playerItem">({stack})</p>
+      <p className="playerItem">[{ showCards(seat) ? hand || '#x#x' : '#x#x'}]</p>
+      <p className="actionItem">{actionDescription} {value ? value : ""}</p>
     </div>
   )
 }
