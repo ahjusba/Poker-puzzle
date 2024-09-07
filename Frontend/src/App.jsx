@@ -4,23 +4,26 @@ import Footer from './components/Footer'
 import PuzzlePage from './pages/PuzzlePage'
 import SubmitPage from './pages/SubmitPage'
 import './index.css'
+import { HandProvider } from './context/HandProvider'
 
 const App = () => {
   return (
-    <Router>
-      <div className="allContent">
-        <Navbar />
-        <div className="pageContent">
-          <Routes>
-            <Route path="/puzzle" element={<PuzzlePage />} />
-            <Route path="/puzzle/:id" element={<PuzzlePage />} />
-            <Route path="/submit" element={<SubmitPage />} />
-            <Route path="/" element={<PuzzlePage />} />
-          </Routes>
+    <HandProvider>      
+      <Router>
+        <div className="allContent">
+          <Navbar />
+          <div className="pageContent">
+            <Routes>
+              <Route path="/puzzle" element={<PuzzlePage />} />
+              <Route path="/puzzle/:id" element={<PuzzlePage />} />
+              <Route path="/submit" element={<SubmitPage />} />
+              <Route path="/" element={<PuzzlePage />} />
+            </Routes>
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </HandProvider>
   )
 }
 

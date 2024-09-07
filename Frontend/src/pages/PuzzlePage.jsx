@@ -97,14 +97,13 @@ const PuzzlePage = () => {
   return (
     <div>      
       <PuzzleBrowser puzzle_id={puzzle.puzzle_id} puzzle={puzzle} onNavigateClick={handleNavigateClick} />
-      <PokerReplayer data={puzzle} saveHandToDatabase={null} viewOnly={true} hasVoted={false}/>
+      <PokerReplayer data={puzzle} viewOnly={true} hasVoted={false}/>
       <OptionButtons handleClick={handleButtonClick} optionButtons={puzzle.options || []} hasVoted={hasVoted} />
     </div>
   )
 }
 
 const NavigateButton = ({ onNavigateClick, nextHand, className }) => {
-  console.log("ClassName: ", className)
   return (    
     <button onClick={() => onNavigateClick(nextHand)} className={className}>
       {nextHand ? <IoCaretForwardOutline size={40} color="white"/> : <IoCaretBackOutline size={40} color="white"/>}    

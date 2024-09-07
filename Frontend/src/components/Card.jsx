@@ -1,10 +1,14 @@
 import './Card.css'
 // import { BsSuitClubFill , BsSuitHeartFill, BsSuitDiamondFill, BsSuitSpadeFill } from "react-icons/io5"
 import { BsFillSuitDiamondFill, BsFillSuitHeartFill, BsFillSuitSpadeFill, BsFillSuitClubFill  } from "react-icons/bs"
-import { FaChessBoard, FaDungeon  } from "react-icons/fa";
+import { FaChessBoard } from "react-icons/fa";
 import classNames from 'classnames'
 
 const Card = ({ card, showCards }) => {
+  if(!card) {
+    console.log("Card was null")
+    return(null)
+  }
   const rank = card[0]
   const suitString = card[1]
 
@@ -39,6 +43,16 @@ const Card = ({ card, showCards }) => {
   } 
 
   const suit = getSuit(suitString)
+
+  if(card === "Zz") {
+    return (
+      <div className={classNames("backside", "hidden")}><FaChessBoard className="backsideImage"/></div>
+    )
+  }
+
+  if(card === "Xx") {
+    showCards = false;
+  }
 
   if(!showCards) {
     return (

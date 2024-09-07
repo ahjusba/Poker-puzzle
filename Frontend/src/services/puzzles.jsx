@@ -28,7 +28,7 @@ const vote = (id, voteId) => {
 }
 
 const submit = (handJson) => {
-  console.log("POSTing handJson to ", url)
+  console.log("POSTing handJson to ", url, "with data: ", handJson)
   return axios.post(url, handJson)
     .then(response => response.data)
     .catch(error => {

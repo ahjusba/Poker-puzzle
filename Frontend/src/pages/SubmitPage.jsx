@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import puzzleService from '../services/puzzles'
 import '../index.css'
 import PokerReplayer from '../components/pokerReplayer'
 import handService from '../services/pokerNowHand'
+import { HandContext } from '../context/HandProvider'
 
 const SubmitPage = () => {
 
-  const [handJson, setHandJson] = useState(null)
+  const [data, setHandJson] = useState(null)
   const [votingOptions, setVotingOptions] = useState(null)
+  const { currentIndex, setCurrentIndex } = useContext(HandContext)
 
   const handleToggleChange = (options) => {
-    console.log("Options: ", options)
     setVotingOptions(options)
   }
 
@@ -44,6 +45,7 @@ const SubmitPage = () => {
       const data = await handService.fetchHandData(handId)
       console.log("Fetched JSON data from backend:", data)
       setHandJson(data)
+      setCurrentIndex(0)
     } catch (error) {
       window.alert("Error fetching JSON from backend. URL should be a unique hand from PokerNow", error)
     }
@@ -51,14 +53,14 @@ const SubmitPage = () => {
 
   const saveHandToDatabase = (puzzlePoint, heroSeat) => {
     //puzzlePoint is the point in hand meant for puzzle.
-    handJson.puzzlePoint = puzzlePoint
-    handJson.heroSeat = heroSeat
-    handJson.options = votingOptions
-    console.log("Saving hand: ", handJson)
-    console.log("Saving using options:", handJson.options)
+    data.puzzlePoint = puzzlePoint
+    data.heroSeat = heroSeat
+    data.options = votingOptions
+    console.log("Saving hand: ", data)
+    console.log("Saving using options:", data.options)
     console.log("saving hand to database with puzzlepoint", puzzlePoint)
 
-    puzzleService.submit(handJson)
+    puzzleService.submit(data)
       .then(response => {
         window.alert("Submission succeeded! Hand saved to database")
         console.log("Submission response:", response)
@@ -69,14 +71,61 @@ const SubmitPage = () => {
       })
   }
 
+  const determineHeroSeat = () => {    
+    //Note that the gameStates array has one extra state (initial state), which is why
+    //we use "currentIndex" instead of "currentIndex + 1" here.
+    if(data.events.length <= currentIndex) {
+      window.alert("This is the last action.")
+      return null
+    }
+    const nextAction = data.events[currentIndex].payload
+    console.log("Current event: ", nextAction)
+    const heroSeat = nextAction.seat
+    if(!heroSeat) {
+      window.alert("Next game phase doesn't include a player action.")
+      //TODO: this still allows some phases, such as "collect pot" where one could
+      //submit a hand in theory - though it wouldn't make sense to do thus
+      return null
+    }
+    const heroName = data.players.find(p => p.seat === heroSeat).name
+    console.log("Hero name:", heroName)
+    console.log("Current seat:", heroSeat)
+    return heroSeat
+  }
+
+  const submitHand = () => {
+
+    const userConfirmed = window.confirm("Do you want to submit this spot in the hand?")
+
+    if(!userConfirmed) {
+      return
+    }
+
+    const handPoint = currentIndex
+
+    const heroSeat = determineHeroSeat()
+    if(!heroSeat) return
+    console.log("Submitting hand")
+    saveHandToDatabase(handPoint, heroSeat)
+  }
+
   return (
     <div>
       <p>Please provide a PokerNow hand-history link</p>
       <HandInputField handleUrlInput={handleUrlInput}/>
-      {handJson && <PokerReplayer data={handJson} saveHandToDatabase={saveHandToDatabase} viewOnly={false} hasVoted={true}/>}
+      {data && <PokerReplayer data={data} viewOnly={false} hasVoted={true}/>}
       <OptionToggles handleToggleChange={handleToggleChange} />
+      <Submit submitHand={submitHand} />
     </div>
   )
+}
+
+const Submit = ({ submitHand }) => {
+  return(
+    <div>
+      <button onClick={() => submitHand()}>Submit</button>      
+    </div>
+  )  
 }
 
 const HandInputField = ({ handleUrlInput }) => {
@@ -105,6 +154,12 @@ const OptionToggles = ({ handleToggleChange }) => {
   
   const [activeOptions, setActiveOptions] = useState(options)
 
+  const initialize = () => {
+    setActiveOptions(options)
+    const formattedOptions = options.map((opt) => ({ action: opt, votes: 0 }))
+    handleToggleChange(formattedOptions)
+  }
+
   const handleToggle = (option) => {
     let updatedOptions
     if (activeOptions.includes(option)) {
@@ -119,7 +174,7 @@ const OptionToggles = ({ handleToggleChange }) => {
   }
 
   useEffect(() => {
-    handleToggleChange(activeOptions)
+    initialize()
   }, [])
 
   return (

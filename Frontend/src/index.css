@@ -45,8 +45,8 @@ p {
 }
 
 .puzzleBrowser > * {
-  flex: 1; /* This ensures all child items grow and shrink equally */
-  text-align: center; /* Centers the content inside each flex item */
+  flex: 1;
+  text-align: center;
 }
 
 .footer {

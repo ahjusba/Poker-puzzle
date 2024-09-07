@@ -10,6 +10,7 @@
   /* border: 1px solid black; */
   padding: 0.1em;
   position: relative;
+  margin: 0 0.2vh;
 }
 
 .backside {
@@ -23,6 +24,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin: 0 0.2vh;
 }
 
 .backsideImage {

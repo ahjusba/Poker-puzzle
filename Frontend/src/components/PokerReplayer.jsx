@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import Card from './Card'
 import './PokerReplayer.css'
 import classNames from 'classnames'
+import { TbPlayerTrackNext, TbPlayerTrackPrev  } from "react-icons/tb";
+import { HandContext } from '../context/HandProvider'; 
 
-const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
+const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
   //https://www.pokernow.club/hand-replayer/game/pglcuV_rJVtWY2nUQx1TF2FSH current hands
   const [gameStates, setGameStates] = useState([])
   const [currentState, setCurrentState] = useState(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  // const [currentIndex, setCurrentIndex] = useState(0)
   const [warningMessage, setWarningMessage] = useState('')
+  const { currentIndex, setCurrentIndex } = useContext(HandContext)
 
   const canUserPressNext = () => {
     return(hasVoted || !viewOnly || currentIndex < data.puzzlePoint)
@@ -170,45 +173,7 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
       return
     }
     setCurrentIndex(newIndex)
-  }
-
-  const determineHeroSeat = () => {    
-    //Note that the gameStates array has one extra state (initial state), which is why
-    //we use "currentIndex" instead of "currentIndex + 1" here.
-    if(data.events.length <= currentIndex) {
-      window.alert("This is the last action.")
-      return null
-    }
-    const nextAction = data.events[currentIndex].payload
-    console.log("Current event: ", nextAction)
-    const heroSeat = nextAction.seat
-    if(!heroSeat) {
-      window.alert("Next game phase doesn't include a player action.")
-      //TODO: this still allows some phases, such as "collect pot" where one could
-      //submit a hand in theory - though it wouldn't make sense to do thus
-      return null
-    }
-    const heroName = data.players.find(p => p.seat === heroSeat).name
-    console.log("Hero name:", heroName)
-    console.log("Current seat:", heroSeat)
-    return heroSeat
-  }
-
-  const submitHand = () => {
-
-    const userConfirmed = window.confirm("Do you want to submit this spot in the hand?")
-
-    if(!userConfirmed) {
-      return
-    }
-
-    const handPoint = currentIndex
-
-    const heroSeat = determineHeroSeat()
-    if(!heroSeat) return
-    console.log("Submitting hand")
-    saveHandToDatabase(handPoint, heroSeat)
-  }
+  }  
 
   useEffect(() => {  
     if(gameStates.length > 0) {
@@ -230,11 +195,9 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
       {currentState ? (
         <>
           <Players gameState={currentState} showCards={showCards} />
-          <Board gameState={currentState} />
-          <Pot gameState={currentState} />
-          { canUserPressNext() && <button onClick={() => nextState()}>Next</button> }
-          <button onClick={() => previousState()}>Previous</button>
-          { !viewOnly && <Submit submitHand={submitHand} /> }
+          <Boards gameState={currentState} finalBoard={gameStates[gameStates.length - 1].board} />
+          <HandBrowser gameState={currentState} nextState={nextState} previousState={previousState} canUserPressNext={canUserPressNext} />
+          {/* { !viewOnly && <Submit submitHand={submitHand} /> } */}
         </>
       ) :
       (
@@ -246,18 +209,28 @@ const PokerReplayer = ({ data, saveHandToDatabase, viewOnly, hasVoted }) => {
   )
 }
 
-const Submit = ({ submitHand }) => {
-  return(
-    <div>
-      <br></br>
-      <button onClick={() => submitHand()}>Submit</button>      
-    </div>
+const NavigateButton = ({ onNavigateClick, isVisible, isNext }) => {
+
+  return (    
+    <button onClick={() => onNavigateClick()} className={classNames({hidden: !isVisible}, 'handBrowserItem')} >
+       {isNext ? 
+        <TbPlayerTrackNext size={40} color="white"/> : 
+        <TbPlayerTrackPrev size={40} color="white"/>}
+    </button>
   )
-  
 }
 
-const WarningMessage = ({ warningMessage }) => {
-  
+const HandBrowser = ({gameState, nextState, previousState, canUserPressNext}) => {
+  return (
+    <div className={"handBrowser"}>
+      <NavigateButton onNavigateClick={previousState} isVisible={true} isNext={false}/>
+      <Pot gameState={gameState} />
+      <NavigateButton onNavigateClick={nextState} isVisible={canUserPressNext()} isNext={true}/>
+    </div>
+  )
+}
+
+const WarningMessage = ({ warningMessage }) => {  
   return(
     <div>
       <p>{warningMessage}</p>
@@ -267,33 +240,82 @@ const WarningMessage = ({ warningMessage }) => {
 
 const Pot = ({ gameState }) => {
   return (
-    <p>
-      Pot: {gameState.pot}
-    </p>
+    <div className={classNames('pot', 'handBrowserItem')}>
+      <p>POT  </p>
+      <p>{gameState.pot}</p>
+    </div>
   )
 }
 
-const Board = ({ gameState }) => {
+const Boards = ({ gameState, finalBoard }) => {
   //We might have two boards if run-it-twice
-  var board1String = ""
-  var board2String = ""
-  var cardCount = 0
-  gameState?.board?.forEach((card) => {
-    cardCount += 1
-    if(cardCount <= 5) {
-      board1String += `${card} ` 
-    } else {
-      board2String += `${card} ` 
-    }
-
-  })
+  const board1 = gameState?.board?.slice(0, 5) || [];
+  const board2 = gameState?.board?.slice(5) || [];
 
   return (
-    <p>
-      {board1String}
-      <br></br>
-      {board2String}
-    </p>
+    <div className="boards">
+      <Board board={board1} isFirst={true} finalBoard={finalBoard} />
+      <Board board={board2} isFirst={false} finalBoard={finalBoard} />
+    </div>
+  )
+}
+
+const Board = ({ board, isFirst, finalBoard }) => {
+  if (!board) {
+    return null
+  }
+
+  let adjustedBoard = [...(board || [])];
+  if (!isFirst) {
+    //Let's place the revealed card in the right position, 
+    //which depends on the total number of revealed cards and current revealed cards
+    
+    const totalOpenCards = finalBoard.length - 5
+    //Possible second board configs:
+    //  XXX X C   = one card
+    if(totalOpenCards === 1) {
+      adjustedBoard.unshift("Zz")
+      adjustedBoard.unshift("Zz")
+      adjustedBoard.unshift("Zz")
+      adjustedBoard.unshift("Zz")
+    }
+    
+    //  XXX C C   = two cards
+    if(totalOpenCards === 2) {
+      adjustedBoard.unshift("Zz")
+      adjustedBoard.unshift("Zz")
+      adjustedBoard.unshift("Zz")
+      while(adjustedBoard.length < 5){
+        adjustedBoard.push("Zz");
+      }
+    }
+    
+    //  CCC C C   = five cards
+    if(totalOpenCards === 5) {
+      while(adjustedBoard.length < 5){
+        adjustedBoard.push("Zz");
+      }
+    }
+  } else {
+    while (adjustedBoard.length < 5) {
+      adjustedBoard.push("Zz");
+    }
+  }
+
+  return (
+    <div className="board">
+      <div className="flop">
+        {adjustedBoard.slice(0, 3).map((card, index) => (
+          <Card key={index} card={card} showCards={true} />
+        ))}
+      </div>
+      <div className="turn">
+        {adjustedBoard[3] && <Card card={adjustedBoard[3]} showCards={true} />}
+      </div>
+      <div className="river">
+        {adjustedBoard[4] && <Card card={adjustedBoard[4]} showCards={true} />}
+      </div>
+    </div>
   )
 }
 

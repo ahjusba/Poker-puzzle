@@ -95,8 +95,6 @@ app.get('/api/puzzles/:id', async (request, response, next) => {
 
 app.post('/api/puzzles', (request, response) => {
   const newPuzzleData = request.body
-  console.log(`POSTing new puzzle with data ${newPuzzleData}`)
-
   Puzzle.find({})
     .then(puzzles => {    
       //Determine the highest id so far
@@ -113,7 +111,6 @@ app.post('/api/puzzles', (request, response) => {
         puzzle_id: Number(highestPuzzleId + 1),
         ...newPuzzleData
       })
-      console.log("NewPuzzle options: ", newPuzzle.options)
       return newPuzzle.save()
     })
     .then(savedPuzzle => {
