@@ -51,6 +51,22 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
       const value = event.payload.value
       const previousValue = player?.value || 0
       const previousStack = player?.stack
+      newState.skipFromReplay = false
+
+      const resetPlayerValues = () => {
+        newState.players.forEach((player) => {
+
+          if(player.actionDescription === "Fold") {
+            player.actionDescription = "Folded"
+          }
+
+          if(player.actionDescription !== "Folded") {
+            player.actionDescription = ""
+          }
+
+          player.value = 0
+        })
+      }
 
       switch (eventType) {
         case 0:
@@ -60,19 +76,19 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
           break
         case 2:
           //Small blind
-          player.actionDescription = "Post BB"
+          player.actionDescription = "BB"
           player.stack = previousStack - (value - previousValue)
           player.value = value
           break
         case 3:
           //Big blind
-          player.actionDescription = "Post SB"
+          player.actionDescription = "SB"
           player.stack = previousStack - (value - previousValue)
           player.value = value
           break
         case 6:
           //Straddle
-          player.actionDescription = "Post Straddle"
+          player.actionDescription = "Straddle"
           player.stack = previousStack - (value - previousValue)
           player.value = value
           break
@@ -94,18 +110,11 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
             newState.board.push(card)
           })
 
-          //Reset player values
-          newState.players.forEach((player) => {
-            player.actionDescription = ""
-            player.value = 0
-          })
+          resetPlayerValues()
           break
         case 10:
           //Collect pot          
-          newState.players.forEach((player) => {
-            player.actionDescription = ""
-            player.value = 0
-          })
+          resetPlayerValues()
           player.actionDescription = "Collect pot"
           player.stack += value
           
@@ -117,26 +126,26 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
           break
         case 12:
           //Reveal cards
-          newState.players.forEach((player) => {
-            player.actionDescription = ""
-            player.value = 0
-          })
+          resetPlayerValues()
           player.actionDescription = "Reveal cards"
+          newState.skipFromReplay = true
           break
         case 14:
           //Run-it-twice decision
-          var approved = event.payload.approved === true ? "approved" : "not approved"
-          newState.players.forEach((player) => {
-            player.actionDescription = `run it twice ${approved}`
-            player.value = 0
-          })
+          // var approved = event.payload.approved === true ? "approved" : "not approved"
+          // newState.players.forEach((player) => {
+          //   player.actionDescription = `run it twice ${approved}`
+          //   player.value = 0
+          // })
+          newState.skipFromReplay = true
           break
         case 15:
           //Hand finished
-          newState.players.forEach((player) => {
-            player.actionDescription = "Hand finished"
-            player.value = 0
-          })
+          // newState.players.forEach((player) => {
+          //   player.actionDescription = "Hand finished"
+          //   player.value = 0
+          // })
+          newState.skipFromReplay = true
           break
         case 16:
           //Uncalled bet
@@ -144,6 +153,7 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
           player.actionDescription = "Return uncalled bet"
           player.value = value
           player.stack += value
+          newState.skipFromReplay = true
           break
         default:
           console.log('Unknown event type:', eventType)
@@ -160,20 +170,30 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
   }
 
   const nextState = () => {
-    const newIndex = currentIndex + 1
-    if(newIndex >= gameStates.length) {
-      return
+    let newIndex = currentIndex + 1;
+    while (newIndex < gameStates.length) {
+      if (!gameStates[newIndex].skipFromReplay) {
+        setCurrentIndex(newIndex);
+        return;
+      }
+      newIndex++;
     }
-    setCurrentIndex(newIndex)
+    setCurrentIndex(currentIndex);
   }
 
   const previousState = () => {
-    const newIndex = currentIndex - 1
-    if(newIndex < 0) {
-      return
+    let newIndex = currentIndex - 1;
+  
+    while (newIndex >= 0) {
+      if (!gameStates[newIndex].skipFromReplay) {
+        setCurrentIndex(newIndex);
+        return;
+      }
+      newIndex--;
     }
-    setCurrentIndex(newIndex)
-  }  
+    
+    setCurrentIndex(0);
+  }
 
   useEffect(() => {  
     if(gameStates.length > 0) {
@@ -195,9 +215,8 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
       {currentState ? (
         <>
           <Players gameState={currentState} showCards={showCards} />
-          <Boards gameState={currentState} finalBoard={gameStates[gameStates.length - 1].board} />
           <HandBrowser gameState={currentState} nextState={nextState} previousState={previousState} canUserPressNext={canUserPressNext} />
-          {/* { !viewOnly && <Submit submitHand={submitHand} /> } */}
+          <Boards gameState={currentState} finalBoard={gameStates[gameStates.length - 1].board} />
         </>
       ) :
       (
@@ -306,14 +325,14 @@ const Board = ({ board, isFirst, finalBoard }) => {
     <div className="board">
       <div className="flop">
         {adjustedBoard.slice(0, 3).map((card, index) => (
-          <Card key={index} card={card} showCards={true} />
+          <Card key={index} card={card} showCards={true} big={true} />
         ))}
       </div>
       <div className="turn">
-        {adjustedBoard[3] && <Card card={adjustedBoard[3]} showCards={true} />}
+        {adjustedBoard[3] && <Card card={adjustedBoard[3]} showCards={true} big={true} />}
       </div>
       <div className="river">
-        {adjustedBoard[4] && <Card card={adjustedBoard[4]} showCards={true} />}
+        {adjustedBoard[4] && <Card card={adjustedBoard[4]} showCards={true} big={true} />}
       </div>
     </div>
   )
@@ -339,7 +358,7 @@ const Players = ({ gameState, showCards }) => {
 
 const Player = ({ player: { name, hand, stack, value, actionDescription, seat }, showCards }) => {
   return(
-    <div className="player">
+    <div className={classNames("player", { transparent: actionDescription === "Folded" || actionDescription === "Fold" })}>
       <p className="playerItem">{name}</p>
       <p className="playerItem">({stack})</p>
       <Hand hand={hand} showCards={showCards(seat)}/>

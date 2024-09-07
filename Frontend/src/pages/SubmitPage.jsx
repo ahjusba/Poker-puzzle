@@ -110,8 +110,7 @@ const SubmitPage = () => {
   }
 
   return (
-    <div>
-      <p>Please provide a PokerNow hand-history link</p>
+    <div className="pageContent">      
       <HandInputField handleUrlInput={handleUrlInput}/>
       {data && <PokerReplayer data={data} viewOnly={false} hasVoted={true}/>}
       <OptionToggles handleToggleChange={handleToggleChange} />
@@ -137,15 +136,18 @@ const HandInputField = ({ handleUrlInput }) => {
   }
 
   return (
-    <form onSubmit={handleURL}>
-      <input
-        type="text"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        placeholder="Enter URL"
-        />
-      <button type="submit">Set URL</button>
-    </form>
+    <div className="submit">
+      <p>Please provide a PokerNow hand-history link</p>
+      <form onSubmit={handleURL}>
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="Enter URL"
+          />
+        <button type="submit">Set URL</button>
+      </form>
+    </div>
   )
 }
 

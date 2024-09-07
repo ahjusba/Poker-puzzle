@@ -12,14 +12,12 @@ const App = () => {
       <Router>
         <div className="allContent">
           <Navbar />
-          <div className="pageContent">
-            <Routes>
-              <Route path="/puzzle" element={<PuzzlePage />} />
-              <Route path="/puzzle/:id" element={<PuzzlePage />} />
-              <Route path="/submit" element={<SubmitPage />} />
-              <Route path="/" element={<PuzzlePage />} />
-            </Routes>
-          </div>
+          <Routes>
+            <Route path="/puzzle" element={<PuzzlePage />} />
+            <Route path="/puzzle/:id" element={<PuzzlePage />} />
+            <Route path="/submit" element={<SubmitPage />} />
+            <Route path="/" element={<PuzzlePage />} />
+          </Routes>
           <Footer />
         </div>
       </Router>

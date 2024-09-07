@@ -95,9 +95,9 @@ const PuzzlePage = () => {
   if(!puzzle) return <p>Loading...</p>
 
   return (
-    <div>      
+    <div className="pageContent">      
       <PuzzleBrowser puzzle_id={puzzle.puzzle_id} puzzle={puzzle} onNavigateClick={handleNavigateClick} />
-      <PokerReplayer data={puzzle} viewOnly={true} hasVoted={false}/>
+      <PokerReplayer data={puzzle} viewOnly={true} hasVoted={hasVoted}/>
       <OptionButtons handleClick={handleButtonClick} optionButtons={puzzle.options || []} hasVoted={hasVoted} />
     </div>
   )
@@ -134,7 +134,7 @@ const PuzzleBrowser = ({ puzzle_id, puzzle, onNavigateClick }) => {
 
 const OptionButtons = ({ handleClick, optionButtons, hasVoted }) => {
   return (
-    <ul>
+    <ul className="voteOptions">
       {optionButtons.map(optionButton => {
         return (
           <OptionButton 
@@ -153,15 +153,17 @@ const OptionButtons = ({ handleClick, optionButtons, hasVoted }) => {
 
 const OptionButton = ({handleClick, action, hasVoted, votes, id}) => {  
   return (
-    <div className="voteResultBox">
-      {hasVoted ? (        
-        <p>{action} votes: {votes}</p>
+    <>
+      {hasVoted ? (
+        <button className="voteOption">
+          {action} {votes}
+        </button>
       ) : (
-        <button onClick={() => handleClick(id)}>
+        <button onClick={() => handleClick(id) } className="voteOption">
           {action}
         </button>
       )}
-    </div>
+    </>
   )
 }
 

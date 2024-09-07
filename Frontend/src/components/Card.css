@@ -13,6 +13,22 @@
   margin: 0 0.2vh;
 }
 
+.BigCard {
+  width: 2em;
+  height: 2.8em;
+  background-color: rgb(255, 255, 255);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* border: 1px solid black; */
+  padding: 0.1em;
+  position: relative;
+  margin: 0 0.2vh;
+  font-size: 2em;
+}
+
 .backside {
   width: 2em;
   height: 2.8em;
@@ -42,6 +58,7 @@
 .suit {
   font-size: 1em;
   align-self:self-end;
+  /* padding: 2px; */
 }
 
 .hearts {

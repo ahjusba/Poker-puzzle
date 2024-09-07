@@ -4,7 +4,7 @@ import { BsFillSuitDiamondFill, BsFillSuitHeartFill, BsFillSuitSpadeFill, BsFill
 import { FaChessBoard } from "react-icons/fa";
 import classNames from 'classnames'
 
-const Card = ({ card, showCards }) => {
+const Card = ({ card, showCards, big }) => {
   if(!card) {
     console.log("Card was null")
     return(null)
@@ -46,7 +46,7 @@ const Card = ({ card, showCards }) => {
 
   if(card === "Zz") {
     return (
-      <div className={classNames("backside", "hidden")}><FaChessBoard className="backsideImage"/></div>
+      <div className={classNames("backside", "hidden", {BigCard: big})}><FaChessBoard className="backsideImage"/></div>
     )
   }
 
@@ -61,7 +61,7 @@ const Card = ({ card, showCards }) => {
   }
 
   return (
-    <div className={classNames('Card', suit)}>
+    <div className={classNames({Card: !big, BigCard: big}, suit)}>
       <div className="rank">{rank}</div>
       <div className="suit">{getSuitIcon()}</div>
     </div>
