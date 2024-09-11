@@ -12,13 +12,12 @@ const PuzzlePage = () => {
   const [hasVoted, setHasVoted] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const navigate = useNavigate()
-  console.log("Has voted: ", hasVoted)
   useEffect(() => {
     const fetchPuzzle = async () => {
       try {
         const puzzle = id ? await puzzleService.getId(id) : await puzzleService.getLatest()
         if (puzzle) {
-          console.log(`Fetched puzzle:`, puzzle)
+          // console.log(`Fetched puzzle:`, puzzle)
           setPuzzle(puzzle)
         } else {
           console.log(`Puzzle not found with id ${id}`)
@@ -66,7 +65,6 @@ const PuzzlePage = () => {
     puzzleService
       .vote(puzzle.puzzle_id, voteId)
       .then(response => {
-        console.log("Vote response: ", response)
         setPuzzle(response)
         updateLocalStorage(puzzle.puzzle_id)
       })
@@ -77,11 +75,9 @@ const PuzzlePage = () => {
 
   const handleNavigateClick = (nextHand) => {
     if(nextHand){
-      console.log("Click next hand")
       const nextPuzzleId = puzzle.puzzle_id + 1
       navigate(`/puzzle/${nextPuzzleId}`)
     } else {
-      console.log("Click previous hand")
       const previousPuzzleId = Math.max(0, puzzle.puzzle_id - 1)
       navigate(`/puzzle/${previousPuzzleId}`)
     }
@@ -91,8 +87,21 @@ const PuzzlePage = () => {
     updateVotes(optionButtonId)
   }
   
-  if(notFound) return <p>Puzzle not found. Redirecting...</p>
-  if(!puzzle) return <p>Loading...</p>
+  if(notFound) {
+    return (
+      <div className="puzzleNotFound">
+        <p>Puzzle not found. Redirecting...</p>
+      </div>
+    )
+  }
+
+  if(!puzzle) {
+    return (
+      <div className="loadingScreen">
+        <p>Loading...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="pageContent">      
@@ -112,7 +121,7 @@ const NavigateButton = ({ onNavigateClick, nextHand, className }) => {
 }
 
 const PuzzleBrowser = ({ puzzle_id, puzzle, onNavigateClick }) => {
-  const backIsHidden = puzzle_id === 0
+  const backIsHidden = puzzle_id === 1
   const forwardIsHidden = puzzle.isLatest
 
   return (

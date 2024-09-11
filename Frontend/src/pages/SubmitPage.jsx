@@ -111,17 +111,21 @@ const SubmitPage = () => {
 
   return (
     <div className="pageContent">      
-      <HandInputField handleUrlInput={handleUrlInput}/>
-      {data && <PokerReplayer data={data} viewOnly={false} hasVoted={true}/>}
-      <OptionToggles handleToggleChange={handleToggleChange} />
-      <Submit submitHand={submitHand} />
+      <HandInputField handleUrlInput={handleUrlInput}/>     
+      {data && (
+        <>
+          <PokerReplayer data={data} viewOnly={false} hasVoted={true}/>
+          <OptionToggles handleToggleChange={handleToggleChange} />
+          <Submit submitHand={submitHand} />
+        </>
+      )}
     </div>
   )
 }
 
 const Submit = ({ submitHand }) => {
   return(
-    <div>
+    <div className="submit">
       <button onClick={() => submitHand()}>Submit</button>      
     </div>
   )  
@@ -136,23 +140,26 @@ const HandInputField = ({ handleUrlInput }) => {
   }
 
   return (
-    <div className="submit">
+    <div className="url">
       <p>Please provide a PokerNow hand-history link</p>
-      <form onSubmit={handleURL}>
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Enter URL"
-          />
-        <button type="submit">Set URL</button>
-      </form>
+      <div>        
+        <form onSubmit={handleURL} className="urlForm">
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Enter URL"
+            className="urlField"
+            />
+          <button type="submit" className="urlButton">SET</button>
+        </form>
+      </div>
     </div>
   )
 }
 
 const OptionToggles = ({ handleToggleChange }) => {
-  const options = ['fold', 'check', 'call', 'bet', 'raise']
+  const options = ['Fold', 'Check', 'Call', 'Bet', 'Raise']
   
   const [activeOptions, setActiveOptions] = useState(options)
 
@@ -178,21 +185,24 @@ const OptionToggles = ({ handleToggleChange }) => {
   useEffect(() => {
     initialize()
   }, [])
-
+  console.log("Options:", activeOptions)
   return (
-    <div>
-      {options.map((option) => (
-        <div key={option}>
-          <label>
-            <input
-              type="checkbox"
-              checked={activeOptions.includes(option)}
-              onChange={() => handleToggle(option)}
-            />
-            {option}
-          </label>
-        </div>
-      ))}
+    <div className="actionsParent">
+      <p>Deselect unnecessary options</p>
+      <div className="actions">
+        {options.map((option) => (
+          <div key={option} className="action">
+            <label className={activeOptions.includes(option) ? 'toggleActive' : ''}>
+              <input
+                type="checkbox"
+                checked={activeOptions.includes(option)}
+                onChange={() => handleToggle(option)}
+              />
+              {option}
+            </label>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

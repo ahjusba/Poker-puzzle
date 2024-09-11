@@ -2,6 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: 'Oswald';
 }
 
 body {
@@ -10,7 +11,6 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  font-family: 'Oswald';
   box-sizing: border-box;
 }
 
@@ -21,12 +21,12 @@ p {
 button {
   font-size: 1.8em;
   color: white;
-  font-family: 'Oswald';
   text-align: center;
   border: none;
   padding: 0;
   margin: 0;
   text-align: center;
+  
   /* line-height: 1.8em; */
 }
 
@@ -42,6 +42,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  margin-bottom: 2vh;
 }
 
 .puzzleBrowser {
@@ -49,7 +50,7 @@ button {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin-top: 2vh;
+  margin-top: 1vh;
   align-self: center;
   width: 100%;
 }
@@ -76,20 +77,121 @@ button {
 
 .voteOption {
   background-color: rgb(255, 196, 0);
-  box-shadow:0 2px 5px #000000;
+  /* box-shadow:0 2px 5px #000000; */
   width: 100%;
   height: 100%;
-  height: 8vh;
+  height: 7vh;
   width: 13vh;
   text-align: center;
   border-radius: 1vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  
   flex-wrap: nowrap;
 }
 
+.url {
+  align-self: center;
+  margin-top: 1vh;
+  /* align-items: center; */
+}
+
+.urlForm {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 2vh;
+  margin-top: 1vh;
+}
+
+.urlField {
+  border: none;
+  border-radius: 1vh;
+  /* text-align: start;
+  align-items: center; */
+  width: 100%;
+  padding: 1vh;
+}
+
+.urlButton {
+  background-color: orangered;
+  height: 4vh;
+  width: 6.5vh;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.5vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.actionsParent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.8vh;
+  margin-top: 1vh;
+}
+
+.action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 8vh;
+  height: 5vh;
+  border-radius: 1vh;
+  border: none;
+  cursor: pointer;
+}
+
+.action label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(255, 165, 0, 0.2);
+  border-radius: 1vh;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.5em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* When the option is active (checked), the color changes to orange */
+.action label.toggleActive {
+  background-color: orange;
+}
+
+.action input[type="checkbox"] {
+  display: none; /* Hide the default checkbox */
+}
+
+.submit {
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+  align-self: center;
+}
+
+.submit button {
+  width: 14vh;
+  height: 6.5vh;
+  background-color: orangered;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
 .footer {
+  flex-shrink: 0;
   height: 4vh;
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
   display: flex;
@@ -99,17 +201,41 @@ button {
 }
 
 .logo {
-  height: 200%;
+  height: 100%;
   align-self: flex-end;
+  margin-left: 1vh;
 }
 
-.navbar {
+.copyright {
+  margin-right: 1vh;
+}
+
+.navbar {  
+  flex-shrink: 0;
   height: 5vh;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+  /* position: fixed; */
+  /* position: top; */
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));  
 }
 
 .hidden {
   visibility: hidden;
+}
+
+.puzzleNotFound {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 1.6em;
+}
+
+.loadingScreen {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 1.6em;
 }
 
 @media (min-width: 950px) { /* Adjust the min-width as needed for your definition of "mobile width" */

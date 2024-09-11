@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const path = require('path')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
@@ -48,10 +49,6 @@ app.get('/api/pokerNowHand/:handId', async (req, res) => {
   }
 })
 
-app.get('/', (request, response) => {
-  response.send('<h1>TODO: infopage</h1>')
-})
-
 app.get('/api/puzzles', (request, response) => {
   console.log("Getting latest puzzle")
   Puzzle.findOne({})
@@ -68,7 +65,6 @@ app.get('/api/puzzles', (request, response) => {
       response.status(500).json({ error: 'Internal server error' })
     })
 })
-
 
 app.get('/api/puzzles/:id', async (request, response, next) => {
   const puzzle_id = Number(request.params.id)
@@ -151,6 +147,13 @@ app.put('/api/puzzles/:id/vote', (request, response, next) => {
   })
 })
 
+app.use((req, res, next) => {
+  if (req.accepts('html')) {
+    res.sendFile(path.resolve(__dirname, 'dist', 'index.html'))  // Adjust the path to your build folder
+  } else {
+    next()  // Let other routes handle the request if it's not an HTML request
+  }
+})
 
 const PORT =  process.env.PORT
 app.listen(PORT, () => {

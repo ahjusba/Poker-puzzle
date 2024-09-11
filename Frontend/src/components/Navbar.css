@@ -1,11 +1,7 @@
-.outer-container {
-
-}
-
 /* Position and sizing of burger button */
 .bm-burger-button {
   position: fixed;
-  width: 4vh;
+  width: 36px;
   height: 3vh;
   right: 1vh;
   top: 1vh;
@@ -18,18 +14,18 @@
 
 /* Color/shape of burger icon bars on hover*/
 .bm-burger-bars-hover {
-  background: white;
+  background: #ffffff;
 }
 
 /* Position and sizing of clickable cross button */
 .bm-cross-button {
-  height: 48px;
-  width: 48px;
+  height: 24px;
+  width: 24px;
 }
 
 /* Color/shape of close button cross */
 .bm-cross {
-  background: white;
+  background: #ffffff;
 }
 
 /*
@@ -37,37 +33,38 @@ Sidebar wrapper styles
 Note: Beware of modifying this element as it can break the animations - you should not need to touch it in most cases
 */
 .bm-menu-wrap {
-  position: fixed;
-  /* height: 100%; */
+  /* position: fixed; */
+  height: 100%;
 }
 
 /* General sidebar styles */
 .bm-menu {
-  background: rgb(129, 89, 68);
-  padding: 25px 0px 0x 70px;
-  font-size: 2.15em;
+  background: rgb(191, 43, 43);
+  padding: 2.5em 1.5em 0;
+  font-size: 1.15em;
 }
 
 /* Morph shape necessary with bubble or elastic */
 .bm-morph-shape {
-  fill: rgb(180, 149, 132);
+  fill: #373a47;
 }
 
 /* Wrapper for item list */
 .bm-item-list {
   color: #b8b7ad;
+  padding: 0.8em;
 }
 
 /* Individual item */
 .bm-item {
   display: inline-block;
-  padding: 25px 25px;
-  text-align: left;
-  height: 25px;
-  color: white
+  font-size: 2.5em;
+  text-decoration: none;
+  font-family: 'Oswald';
+  color: white;
 }
 
 /* Styling of overlay */
 .bm-overlay {
-  background: rgba(0, 0, 0, 0);
+  background: rgba(0, 0, 0, 0.3);
 }

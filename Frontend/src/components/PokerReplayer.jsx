@@ -22,7 +22,7 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
   }
 
   const createGameStates = (json) => {
-    console.log("Creating gameStates with json:", json)
+    // console.log("Creating gameStates with json:", json)
     var states = []
 
     //Initialize
@@ -36,6 +36,74 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
 
     states.push({ board: board, players: players, totalMoney: totalMoney, pot: 0 })
 
+    const setPlayerPositions = (players, json) => {
+      const smallBlindEvent = json.events.find(event => event.payload.type === 3)
+      if(!smallBlindEvent) {
+        console.log("No small blind event found")
+        return
+      }
+
+      const smallBlindSeat = smallBlindEvent.payload.seat
+  
+      // Set Small Blind (SB) position
+      const smallBlindPlayer = players.find(player => player.seat === smallBlindSeat)
+      if (smallBlindPlayer) {
+        smallBlindPlayer.position = "SB"
+      }
+  
+      // Get sorted seat numbers
+      const seatNumbers = players.map(player => player.seat).sort((a, b) => a - b)
+  
+      // Find the next seat for Big Blind - the next higher seat number
+      const smallBlindIndex = seatNumbers.indexOf(smallBlindSeat)
+      const bigBlindSeat = seatNumbers[(smallBlindIndex + 1) % seatNumbers.length]  // wrap around to first seat if needed
+      const bigBlindPlayer = players.find(player => player.seat === bigBlindSeat)
+      if (bigBlindPlayer) {
+        bigBlindPlayer.position = "BB"
+      }
+  
+      // Find the next seat for Dealer - the next lower seat number
+      const dealerSeat = seatNumbers[(smallBlindIndex - 1 + seatNumbers.length) % seatNumbers.length]  // wrap around to last seat if needed
+      const dealerPlayer = players.find(player => player.seat === dealerSeat)
+      if (dealerPlayer) {
+        dealerPlayer.position = "D"
+      }
+
+      //If we have only two players, the SB will be the D
+      if(players.length === 2) {
+        smallBlindPlayer.position = "D"
+      }
+    }
+
+    const reorganizePlayers = (players) => {
+      const dealerPlayer = players.find(player => player.position === "D")
+    
+      if (!dealerPlayer) {
+        console.error("No dealer found in the player list.")
+        return players
+      }
+    
+      const dealerSeat = dealerPlayer.seat
+    
+      // Sort players by seat, starting from the dealer's seat and wrapping around
+      const sortedPlayers = players
+        .slice() // Create a copy of the array to avoid mutating the original
+        .sort((a, b) => a.seat - b.seat) // Sort players by seat number
+    
+      // Find the index of the dealer in the sorted array
+      const dealerIndex = sortedPlayers.findIndex(player => player.seat === dealerSeat)
+    
+      // Reorganize players so that the dealer is first, followed by the rest
+      const reorganizedPlayers = [
+        ...sortedPlayers.slice(dealerIndex), // From dealer to end
+        ...sortedPlayers.slice(0, dealerIndex) // From start to dealer
+      ]
+
+      return reorganizedPlayers
+    }
+
+    setPlayerPositions(states[0].players, json)
+    states[0].players = reorganizePlayers(states[0].players)
 
     json.events.forEach((event) => {
       if(states.length == 0) { console.error("GameState couldn't initialize") }
@@ -165,7 +233,7 @@ const PokerReplayer = ({ data, viewOnly, hasVoted }) => {
       states.push(newState)
     })
 
-    console.log("Setting gameStates with ", states)
+    // console.log("Setting gameStates with ", states)
     setGameStates(states)
   }
 
@@ -356,11 +424,21 @@ const Players = ({ gameState, showCards }) => {
   )
 }
 
-const Player = ({ player: { name, hand, stack, value, actionDescription, seat }, showCards }) => {
+const Player = ({ player: { name, hand, stack, value, actionDescription, seat, position }, showCards }) => {
+
+  var playerPos = position ? position : ""
+
   return(
     <div className={classNames("player", { transparent: actionDescription === "Folded" || actionDescription === "Fold" })}>
-      <p className="playerItem">{name}</p>
-      <p className="playerItem">({stack})</p>
+      <p className="playerItem">{name.slice(0, 7)}</p>
+      <div className="stackItem">
+        <p>
+          ({stack})
+        </p>
+        <p>
+          {playerPos}
+        </p>
+      </div>
       <Hand hand={hand} showCards={showCards(seat)}/>
       <p className="actionItem">{actionDescription} {value ? value : ""}</p>
     </div>

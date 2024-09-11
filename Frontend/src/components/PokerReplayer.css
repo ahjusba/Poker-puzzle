@@ -33,7 +33,7 @@
   /* margin-top: 0.6em; */
   display: flex;
   flex-direction: row;
-  align-items: center;    
+  align-items: center;
 }
 
 .transparent {
@@ -42,17 +42,26 @@
 
 .playerItem {
   flex: 1;
+  text-wrap: nowrap;
 }
 
-.actionItem {
-  flex: 1.5;
+.actionItem {  
+  flex: 1;
   text-align: center;
+  text-wrap: nowrap;
+}
+
+.stackItem {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .hand {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: end;
   /* gap: 0.3em; */
 }
 
