@@ -185,7 +185,6 @@ const OptionToggles = ({ handleToggleChange }) => {
   useEffect(() => {
     initialize()
   }, [])
-  console.log("Options:", activeOptions)
   return (
     <div className="actionsParent">
       <p>Deselect unnecessary options</p>

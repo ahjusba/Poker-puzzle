@@ -21,11 +21,12 @@ app.get('/api/pokerNowHand/:handId', async (req, res) => {
   const { handId } = req.params
   console.log("HandID: ", handId)
   var apiUrl = ""
-  if(handId.includes('-')) {
-    apiUrl = `https://media.pokernow.club/shared-hands/${handId}.json`
-  } else {
-    apiUrl = `https://www.pokernow.club/api/hand-replayer/hand/${handId}`
-  }  
+  apiUrl = `https://media.pokernow.club/shared-hands/${handId}.json`
+  // if(handId.includes('-')) {
+  //   apiUrl = `https://media.pokernow.club/shared-hands/${handId}.json`
+  // } else {
+  //   apiUrl = `https://www.pokernow.club/api/hand-replayer/hand/${handId}`
+  // }  
   console.log("Fetching hand form PokerNow with URL", apiUrl)
 
   try {
